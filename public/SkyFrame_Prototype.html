@@ -1143,7 +1143,7 @@ select {
                 <span class="price-amount" id="price-oversize">$0.00</span>
               </div>
               <div class="price-line">
-                <span>Markup (28%)</span>
+                <span id="markup-label">Markup (28%)</span>
                 <span class="price-amount" id="price-markup">$91.86</span>
               </div>
               <div class="price-line total">
@@ -1210,7 +1210,19 @@ select {
         <div id="patab-markup" class="pa-panel active">
 
 <div style="display:flex;gap:32px;flex-wrap:wrap;">
-  <div class="pa-section"><div class="pa-section-title">MARKUP PERCENT</div><div class="pa-table-wrap"><table class="pa-table"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody><tr><td>MARKUP PERCENT</td><td contenteditable="true">0.28</td></tr></tbody></table></div></div>
+  <div class="pa-section">
+    <div class="pa-section-title">MARKUP PERCENT</div>
+    <div class="pa-table-wrap">
+      <table class="pa-table">
+        <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+        <tbody><tr><td>MARKUP PERCENT</td><td contenteditable="true" id="pa-markup-percent">0.28</td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px;">
+      <button class="btn btn-primary" style="padding:8px 20px;font-size:13px;" onclick="saveMarkupPercent()">Save Markup</button>
+      <span id="markup-save-status" style="margin-left:12px;font-size:12px;color:var(--gray-mid);"></span>
+    </div>
+  </div>
   <div class="pa-section"><div class="pa-section-title">OVERSIZE SURCHARGE</div><div class="pa-table-wrap"><table class="pa-table"><thead><tr><th>LINEAR INCHES</th><th>SURCHARGE</th></tr></thead><tbody><tr><td contenteditable="true">218</td><td contenteditable="true">400</td></tr><tr><td contenteditable="true">336</td><td contenteditable="true">1800</td></tr><tr><td contenteditable="true">432</td><td contenteditable="true">4800</td></tr></tbody></table></div></div>
 </div>
         </div>
@@ -2590,6 +2602,35 @@ function closeModal(modalName) {
 }
 
 // PRICING ENGINE - Real Excel V15 Logic
+// ── Global markup — controlled from Pricing Admin → Markup tab ────────────────
+let MARKUP_PERCENT = 0.28;
+
+function saveMarkupPercent() {
+  const cell = document.getElementById('pa-markup-percent');
+  const raw  = parseFloat(cell.textContent.trim().replace('%', ''));
+  if (isNaN(raw) || raw < 0) {
+    showToast('Invalid markup value — enter a number like 0.28 or 28', 'error');
+    return;
+  }
+  // Accept both 0.28 and 28 formats
+  MARKUP_PERCENT = raw > 1 ? raw / 100 : raw;
+  // Normalise displayed value to decimal format
+  cell.textContent = MARKUP_PERCENT.toFixed(2);
+  // Update Live Quote label
+  const pct = Math.round(MARKUP_PERCENT * 100);
+  const lbl = document.getElementById('markup-label');
+  if (lbl) lbl.textContent = `Markup (${pct}%)`;
+  // Recalculate configurator prices
+  updatePrice();
+  // Show confirmation
+  const status = document.getElementById('markup-save-status');
+  if (status) {
+    status.textContent = `✓ Saved — ${pct}% applied to configurator`;
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  }
+  showToast(`Markup updated to ${pct}%`, 'success');
+}
+
 // Maps each paper type to its price category
 const PAPER_CATEGORY = {
   'ENHANCED MATTE':   'STANDARD',
@@ -2783,9 +2824,9 @@ function updatePrice() {
   else if (totalInches >= 336) oversizePrice = 1800;
   else if (totalInches >= 218) oversizePrice = 400;
 
-  // MARKUP — applied to all components including printing (28%)
+  // MARKUP — applied to all components including printing (rate from Pricing Admin)
   const componentsTotal = framePrice + mattingPrice + glazingPrice + mountingPrice + miscPrice;
-  const markup = (printPrice + componentsTotal) * 0.28;
+  const markup = (printPrice + componentsTotal) * MARKUP_PERCENT;
 
   // SUBTOTAL
   const subtotal = printPrice + componentsTotal + oversizePrice + markup;
@@ -2805,9 +2846,9 @@ function updatePrice() {
   // TOTAL
   const total = afterDiscount + tax;
 
-  // Update UI — Printing line shows price already with 28% markup baked in
-  const printingMarkup = printPrice * 0.28;
-  const componentsMarkup = componentsTotal * 0.28;
+  // Update UI — Printing line shows price with markup baked in
+  const printingMarkup   = printPrice * MARKUP_PERCENT;
+  const componentsMarkup = componentsTotal * MARKUP_PERCENT;
   document.getElementById('price-printing').textContent = '$' + (printPrice + printingMarkup).toFixed(2);
   document.getElementById('price-frame').textContent = '$' + framePrice.toFixed(2);
   document.getElementById('price-matting').textContent = '$' + mattingPrice.toFixed(2);
