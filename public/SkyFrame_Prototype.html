@@ -628,10 +628,23 @@ select {
                 <label>Paper Type</label>
                 <select id="paper-type" onchange="updatePrice()">
                   <option value="">No Printing</option>
-                  <option value="ENHANCED MATTE">Enhanced Matte</option>
-                  <option value="PREMIUM LUSTRE">Premium Lustre</option>
-                  <option value="HAHNEMUHLE">Hahnemühle (Fine Art)</option>
-                  <option value="CANVAS">Canvas (Gallery Fine Art)</option>
+                  <optgroup label="Standard">
+                    <option value="ENHANCED MATTE">Enhanced Matte</option>
+                    <option value="PREMIUM LUSTRE">Premium Lustre</option>
+                    <option value="PREMIUM GLOSSY">Premium Glossy</option>
+                    <option value="SOMERSET VELVET">Somerset Velvet</option>
+                    <option value="EPSON EXHIBITION">Epson Exhibition</option>
+                  </optgroup>
+                  <optgroup label="Fine Art">
+                    <option value="HAHNEMUHLE">Hahnemühle</option>
+                    <option value="ILLFORD">Illford</option>
+                    <option value="CANSON">Canson</option>
+                    <option value="MUSEO">Museo</option>
+                    <option value="MOAB">Moab</option>
+                  </optgroup>
+                  <optgroup label="Gallery Fine Art">
+                    <option value="CANVAS">Canvas</option>
+                  </optgroup>
                 </select>
               </div>
               <div class="form-group">
@@ -2577,16 +2590,32 @@ function closeModal(modalName) {
 }
 
 // PRICING ENGINE - Real Excel V15 Logic
+// Maps each paper type to its price category
+const PAPER_CATEGORY = {
+  'ENHANCED MATTE':   'STANDARD',
+  'PREMIUM LUSTRE':   'STANDARD',
+  'PREMIUM GLOSSY':   'STANDARD',
+  'SOMERSET VELVET':  'STANDARD',
+  'EPSON EXHIBITION': 'STANDARD',
+  'HAHNEMUHLE':       'FINE ART',
+  'ILLFORD':          'FINE ART',
+  'CANSON':           'FINE ART',
+  'MUSEO':            'FINE ART',
+  'MOAB':             'FINE ART',
+  'CANVAS':           'GALLERY FINE ART',
+};
+
+// Prices by category (all types within a category share the same price table)
 const PRINTING_PRICES = {
-  'ENHANCED MATTE': {
+  'STANDARD': {
     'Standard': {'8x10':28,'11x14':37,'16x20':46,'20x24':55,'20x30':73,'24x30':84,'24x36':93,'30x40':124,'40x40':159,'40x50':197,'40x60':240,'40x72':280,'48x50':216,'48x60':248,'48x72':298,'48x84':355,'48x96':397,'58x58':310,'58x72':373,'58x84':435,'58x96':497},
     'Multiple': {'8x10':14,'11x14':23,'16x20':32,'20x24':42,'20x30':52,'24x30':55,'24x36':67,'30x40':83,'40x40':101,'40x50':124,'40x60':155,'40x72':182,'48x50':182,'48x60':197,'48x72':228,'48x84':248,'48x96':274,'58x58':207,'58x72':259,'58x84':300,'58x96':332}
   },
-  'HAHNEMUHLE': {
+  'FINE ART': {
     'Standard': {'8x10':46,'11x14':67,'16x20':90,'20x24':121,'20x30':150,'24x30':173,'24x36':182,'30x40':243,'40x40':276,'40x50':308,'40x60':369,'40x72':437,'48x50':350,'48x60':437,'48x72':525,'48x84':611,'48x96':699,'58x58':546,'58x72':653,'58x84':742,'58x96':872},
     'Multiple': {'8x10':25,'11x14':44,'16x20':62,'20x24':77,'20x30':79,'24x30':81,'24x36':118,'30x40':154,'40x40':173,'40x50':185,'40x60':228,'40x72':260,'48x50':207,'48x60':260,'48x72':313,'48x84':366,'48x96':418,'58x58':328,'58x72':391,'58x84':444,'58x96':524}
   },
-  'CANVAS': {
+  'GALLERY FINE ART': {
     'Standard': {'8x10':62,'11x14':83,'16x20':124,'20x24':165,'20x30':205,'24x30':240,'24x36':278,'30x40':305,'40x40':340,'40x50':373,'40x60':432,'40x72':518,'48x50':414,'48x60':518,'48x72':620,'48x84':725,'48x96':828,'58x58':646,'58x72':776,'58x84':870,'58x96':994},
     'Multiple': {'8x10':42,'11x14':55,'16x20':83,'20x24':111,'20x30':136,'24x30':161,'24x36':186,'30x40':205,'40x40':233,'40x50':248,'40x60':280,'40x72':345,'48x50':276,'48x60':345,'48x72':414,'48x84':483,'48x96':552,'58x58':431,'58x72':518,'58x84':580,'58x96':663}
   }
@@ -2675,10 +2704,11 @@ function updatePrice() {
   let miscPrice = 0;
   let oversizePrice = 0;
 
-  // PRINTING
+  // PRINTING — look up by category (all types in same category share a price table)
   if (paperType && printW && printH) {
-    const priceSet = PRINTING_PRICES[paperType] || PRINTING_PRICES['ENHANCED MATTE'];
-    const sizeKey = getSizeKey(printW, printH);
+    const category = PAPER_CATEGORY[paperType] || 'STANDARD';
+    const priceSet = PRINTING_PRICES[category];
+    const sizeKey  = getSizeKey(printW, printH);
     const printType = multiplePrints === 'multiple' ? 'Multiple' : 'Standard';
     if (sizeKey && priceSet[printType] && priceSet[printType][sizeKey]) {
       printPrice = priceSet[printType][sizeKey];
@@ -2753,9 +2783,9 @@ function updatePrice() {
   else if (totalInches >= 336) oversizePrice = 1800;
   else if (totalInches >= 218) oversizePrice = 400;
 
-  // MARKUP
+  // MARKUP — applied to all components including printing (28%)
   const componentsTotal = framePrice + mattingPrice + glazingPrice + mountingPrice + miscPrice;
-  const markup = componentsTotal * 0.28;
+  const markup = (printPrice + componentsTotal) * 0.28;
 
   // SUBTOTAL
   const subtotal = printPrice + componentsTotal + oversizePrice + markup;
@@ -2775,15 +2805,17 @@ function updatePrice() {
   // TOTAL
   const total = afterDiscount + tax;
 
-  // Update UI
-  document.getElementById('price-printing').textContent = '$' + printPrice.toFixed(2);
+  // Update UI — Printing line shows price already with 28% markup baked in
+  const printingMarkup = printPrice * 0.28;
+  const componentsMarkup = componentsTotal * 0.28;
+  document.getElementById('price-printing').textContent = '$' + (printPrice + printingMarkup).toFixed(2);
   document.getElementById('price-frame').textContent = '$' + framePrice.toFixed(2);
   document.getElementById('price-matting').textContent = '$' + mattingPrice.toFixed(2);
   document.getElementById('price-glazing').textContent = '$' + glazingPrice.toFixed(2);
   document.getElementById('price-mounting').textContent = '$' + mountingPrice.toFixed(2);
   document.getElementById('price-misc').textContent = '$' + miscPrice.toFixed(2);
   document.getElementById('price-oversize').textContent = '$' + oversizePrice.toFixed(2);
-  document.getElementById('price-markup').textContent = '$' + markup.toFixed(2);
+  document.getElementById('price-markup').textContent = '$' + componentsMarkup.toFixed(2);
   document.getElementById('price-subtotal').textContent = '$' + subtotal.toFixed(2);
   document.getElementById('price-discount').textContent = '-$' + discount.toFixed(2);
   document.getElementById('price-tax').textContent = '$' + tax.toFixed(2);
