@@ -512,7 +512,7 @@ async function pollMondayStatuses() {
 setInterval(pollMondayStatuses, 20_000);
 
 // ── TrackPod integration ───────────────────────────────────────────────────────
-const TRACKPOD_API_KEY = process.env.TRACKPOD_API_KEY || '019e6dc3-64d3-7f95-85cd-654902a8f516';
+const TRACKPOD_API_KEY = process.env.TRACKPOD_API_KEY || '019ea821-d811-701e-91e6-46a1191d65a5';
 const TRACKPOD_BASE    = 'https://api.track-pod.com';
 
 // Randomised pools — change every request so test orders look distinct
@@ -606,9 +606,11 @@ app.post('/api/send-to-trackpod', async (req, res) => {
       trackpodRef: null,
     });
   } catch (err) {
-    const msg = err.response?.data?.message || err.response?.data || err.message;
-    console.error('TrackPod error:', msg);
-    res.status(500).json({ error: String(msg) });
+    const data   = err.response?.data;
+    const status = err.response?.status;
+    const msg    = data?.Detail || data?.message || (typeof data === 'string' ? data : null) || err.message;
+    console.error(`TrackPod error [${status}]:`, msg);
+    res.status(500).json({ error: msg, statusCode: status });
   }
 });
 
