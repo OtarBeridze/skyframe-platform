@@ -1416,8 +1416,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$4,280</td>
             <td>May 22, 2026</td>
@@ -1442,8 +1446,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$8,920</td>
             <td>May 21, 2026</td>
@@ -1468,8 +1476,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$12,450</td>
             <td>May 20, 2026</td>
@@ -1494,8 +1506,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$3,680</td>
             <td>May 18, 2026</td>
@@ -1520,8 +1536,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$6,750</td>
             <td>May 15, 2026</td>
@@ -1546,8 +1566,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$21,300</td>
             <td>May 12, 2026</td>
@@ -1572,8 +1596,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$17,640</td>
             <td>May 10, 2026</td>
@@ -1598,8 +1626,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$5,490</td>
             <td>May 7, 2026</td>
@@ -1624,8 +1656,12 @@ select {
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
                 <option value="Working on it">Working on it</option>
+                <option value="Unscheduled">Unscheduled</option>
                 <option value="Scheduled">Scheduled</option>
+                <option value="Delivered">Delivered</option>
+                <option value="NotDelivered">Not Delivered</option>
                 <option value="Failed">Failed</option>
+                <option value="Canceled">Canceled</option>
               </select></td>
             <td>$11,200</td>
             <td>May 3, 2026</td>
@@ -3340,8 +3376,12 @@ function prependOrderRow(order) {
         <option value="Done">Done</option>
         <option value="Stuck">Stuck</option>
         <option value="Working on it">Working on it</option>
+        <option value="Unscheduled">Unscheduled</option>
         <option value="Scheduled">Scheduled</option>
+        <option value="Delivered">Delivered</option>
+        <option value="NotDelivered">Not Delivered</option>
         <option value="Failed">Failed</option>
+        <option value="Canceled">Canceled</option>
       </select></td>
     <td>$${Number(order.total).toFixed(2)}</td>
     <td>${date}</td>
@@ -3371,10 +3411,14 @@ const STATUS_SLUG = {
   'Stuck':              'stuck',
   'Working on it':      'workingonit',
   // TrackPod statuses
+  'Unscheduled':        'unscheduled',
   'Scheduled':          'scheduled',
-  'InProgress':         'inprogress',   // reuses existing class
-  'Completed':          'completed',    // reuses existing class
+  'InProgress':         'inprogress',
+  'Delivered':          'delivered',
+  'Completed':          'completed',
+  'NotDelivered':       'notdelivered',
   'Failed':             'failed',
+  'Canceled':           'canceled',
 };
 
 function applyOrderStatusClass(sel) {
@@ -3458,6 +3502,9 @@ async function sendToTrackPod(btn) {
       btn.style.background       = '#00875A';
       btn.dataset.trackpodSent   = '1';
       _trackpodRows[orderId]     = { row };
+      // Set status to Unscheduled immediately (TrackPod's label for empty Status)
+      const sel = row.querySelector('select');
+      if (sel) { sel.value = 'Unscheduled'; applyOrderStatusClass(sel); }
       showToast(
         `Order ${orderId} → TrackPod | ${data.address} | ${data.timeFrom}–${data.timeTo}`,
         'success'
@@ -3762,8 +3809,12 @@ function showToast(message, type) {
 /* Monday statuses */
 .quote-status-select.status-workingonit { background: #FFF4E6; color: #E09129; }
 /* TrackPod statuses */
-.quote-status-select.status-scheduled { background: #EEF2FF; color: #4F46E5; }
-.quote-status-select.status-failed    { background: #FEE2E2; color: #B91C1C; }
+.quote-status-select.status-unscheduled  { background: #F3F4F6; color: #6B7280; }
+.quote-status-select.status-scheduled    { background: #EEF2FF; color: #4F46E5; }
+.quote-status-select.status-delivered    { background: #D1FAE5; color: #065F46; }
+.quote-status-select.status-notdelivered { background: #FEF3C7; color: #92400E; }
+.quote-status-select.status-failed       { background: #FEE2E2; color: #B91C1C; }
+.quote-status-select.status-canceled     { background: #F3F4F6; color: #6B7280; }
 .btn-trackpod {
   background: #0066FF;
   color: #fff;
