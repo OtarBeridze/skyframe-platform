@@ -545,7 +545,8 @@ const TP_COMMENTS = [
 ];
 
 // Tracked TrackPod orders: { orderId, trackpodNumber, lastStatus }
-let trackpodTracked = [];
+let trackpodTracked  = [];
+let lastTrackpodPoll = new Date(Date.now() - 60_000); // start 1 min ago
 
 const trackpodHeaders = {
   'X-Api-Key':    TRACKPOD_API_KEY,
@@ -618,26 +619,48 @@ app.get('/api/trackpod-status', (req, res) => {
   res.json({ tracked: trackpodTracked });
 });
 
-// Poll TrackPod for status changes every 30 seconds
+// Poll TrackPod for status changes — batch via /Order/Status/Date/{since}
 async function pollTrackpodStatuses() {
   if (trackpodTracked.length === 0) return;
-  for (const entry of trackpodTracked) {
-    try {
-      const r = await axios.get(
-        `${TRACKPOD_BASE}/Order/Number/${encodeURIComponent(entry.trackpodNumber)}`,
-        { headers: trackpodHeaders },
-      );
-      const status = r.data?.Status || '';
-      if (status && status !== entry.lastStatus) {
-        console.log(`↻ TrackPod ${entry.trackpodNumber} (${entry.orderId}): "${entry.lastStatus || 'New'}" → "${status}"`);
+
+  const since    = lastTrackpodPoll.toISOString();
+  lastTrackpodPoll = new Date(); // advance before request so we don't miss events
+
+  try {
+    const r = await axios.get(
+      `${TRACKPOD_BASE}/Order/Status/Date/${encodeURIComponent(since)}`,
+      { headers: trackpodHeaders },
+    );
+
+    const orders = Array.isArray(r.data) ? r.data : [];
+    const trackedNumbers = new Map(trackpodTracked.map(t => [t.trackpodNumber, t]));
+
+    orders.forEach(o => {
+      const entry  = trackedNumbers.get(o.Number);
+      const status = o.Status || '';
+      if (entry && status && status !== entry.lastStatus) {
+        console.log(`↻ TrackPod ${o.Number} (${entry.orderId}): "${entry.lastStatus || 'New'}" → "${status}"`);
         entry.lastStatus = status;
       }
-    } catch (err) {
-      // silent — poll will retry
+    });
+  } catch (err) {
+    // Fallback: poll each order individually if batch endpoint fails
+    for (const entry of trackpodTracked) {
+      try {
+        const r = await axios.get(
+          `${TRACKPOD_BASE}/Order/Number/${encodeURIComponent(entry.trackpodNumber)}`,
+          { headers: trackpodHeaders },
+        );
+        const status = r.data?.Status || '';
+        if (status && status !== entry.lastStatus) {
+          console.log(`↻ TrackPod ${entry.trackpodNumber} (${entry.orderId}): "${entry.lastStatus || 'New'}" → "${status}"`);
+          entry.lastStatus = status;
+        }
+      } catch { /* silent */ }
     }
   }
 }
-setInterval(pollTrackpodStatuses, 30_000);
+setInterval(pollTrackpodStatuses, 20_000);
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
