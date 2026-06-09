@@ -1415,6 +1415,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -1440,6 +1441,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -1465,6 +1467,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -1490,6 +1493,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -1515,6 +1519,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -1540,6 +1545,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -1565,6 +1571,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -1590,6 +1597,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -1615,6 +1623,7 @@ select {
                 <option value="Pending Deploy">Pending Deploy</option>
                 <option value="Done">Done</option>
                 <option value="Stuck">Stuck</option>
+                <option value="Working on it">Working on it</option>
                 <option value="Scheduled">Scheduled</option>
                 <option value="Failed">Failed</option>
               </select></td>
@@ -2090,7 +2099,7 @@ select {
             <th>Client</th>
             <th>Status</th>
             <th>Total</th>
-            <th>Sent</th>
+            <th>Sent to Client</th>
             <th>Expires</th>
             <th>Actions</th>
           </tr>
@@ -2102,7 +2111,7 @@ select {
             <td>
               <select class="quote-status-select status-sent" data-quote="QTE-2134" onchange="updateQuoteStatus(this)">
                 <option value="Draft">Draft</option>
-                <option value="Sent" selected>Sent</option>
+                <option value="Sent" selected>Sent to client</option>
                 <option value="Approved">Approved</option>
                 <option value="Paid">Paid</option>
               </select>
@@ -2121,7 +2130,7 @@ select {
             <td>
               <select class="quote-status-select status-approved" data-quote="QTE-2133" onchange="updateQuoteStatus(this)">
                 <option value="Draft">Draft</option>
-                <option value="Sent">Sent</option>
+                <option value="Sent">Sent to client</option>
                 <option value="Approved" selected>Approved</option>
                 <option value="Paid">Paid</option>
               </select>
@@ -2140,7 +2149,7 @@ select {
             <td>
               <select class="quote-status-select status-draft" data-quote="QTE-2132" onchange="updateQuoteStatus(this)">
                 <option value="Draft" selected>Draft</option>
-                <option value="Sent">Sent</option>
+                <option value="Sent">Sent to client</option>
                 <option value="Approved">Approved</option>
                 <option value="Paid">Paid</option>
               </select>
@@ -2159,7 +2168,7 @@ select {
             <td>
               <select class="quote-status-select status-approved" data-quote="QTE-2131" onchange="updateQuoteStatus(this)">
                 <option value="Draft">Draft</option>
-                <option value="Sent">Sent</option>
+                <option value="Sent">Sent to client</option>
                 <option value="Approved" selected>Approved</option>
                 <option value="Paid">Paid</option>
               </select>
@@ -2178,7 +2187,7 @@ select {
             <td>
               <select class="quote-status-select status-sent" data-quote="QTE-2130" onchange="updateQuoteStatus(this)">
                 <option value="Draft">Draft</option>
-                <option value="Sent" selected>Sent</option>
+                <option value="Sent" selected>Sent to client</option>
                 <option value="Approved">Approved</option>
                 <option value="Paid">Paid</option>
               </select>
@@ -2197,7 +2206,7 @@ select {
             <td>
               <select class="quote-status-select status-draft" data-quote="QTE-2129" onchange="updateQuoteStatus(this)">
                 <option value="Draft" selected>Draft</option>
-                <option value="Sent">Sent</option>
+                <option value="Sent">Sent to client</option>
                 <option value="Approved">Approved</option>
                 <option value="Paid">Paid</option>
               </select>
@@ -2216,7 +2225,7 @@ select {
             <td>
               <select class="quote-status-select status-approved" data-quote="QTE-2128" onchange="updateQuoteStatus(this)">
                 <option value="Draft">Draft</option>
-                <option value="Sent">Sent</option>
+                <option value="Sent">Sent to client</option>
                 <option value="Approved" selected>Approved</option>
                 <option value="Paid">Paid</option>
               </select>
@@ -2235,7 +2244,7 @@ select {
             <td>
               <select class="quote-status-select status-sent" data-quote="QTE-2127" onchange="updateQuoteStatus(this)">
                 <option value="Draft">Draft</option>
-                <option value="Sent" selected>Sent</option>
+                <option value="Sent" selected>Sent to client</option>
                 <option value="Approved">Approved</option>
                 <option value="Paid">Paid</option>
               </select>
@@ -3071,8 +3080,32 @@ function updateQuoteStatus(selectEl) {
   const btn = document.getElementById('sqb-' + quoteId);
   if (btn) {
     // Send to QB only available when Approved; hide it entirely once Paid
-    btn.disabled    = (status !== 'Approved');
+    btn.disabled      = (status !== 'Approved');
     btn.style.display = (status === 'Paid') ? 'none' : '';
+  }
+
+  // When manually set to Paid → create an order row in the Orders page
+  if (status === 'Paid' && !_quoteOrderCreated.has(quoteId)) {
+    _quoteOrderCreated.add(quoteId);
+    const row   = selectEl.closest('tr');
+    const cells = row ? row.querySelectorAll('td') : [];
+    const clientName = cells[1]?.textContent.trim() || '';
+    const totalStr   = cells[3]?.textContent.trim() || '$0';
+    const dateSent   = cells[4]?.textContent.trim() || new Date().toLocaleDateString();
+    const total      = parseFloat(totalStr.replace(/[$,]/g, '')) || 0;
+    const orderId    = 'ORD-' + quoteId.replace('QTE-', '');
+
+    prependOrderRow({
+      orderId,
+      invoiceId:  'manual-' + quoteId,
+      docNumber:  quoteId,
+      clientName,
+      total,
+      paidAt:     new Date(),
+      status:     'Paid',
+      quoteId,
+    });
+    showToast(`Order ${orderId} created from ${quoteId}`, 'success');
   }
 }
 
@@ -3254,7 +3287,8 @@ function saveAsDraft() {
 }
 
 // ── Orders polling ────────────────────────────────────────────────────────────
-const _knownOrderIds = new Set();
+const _knownOrderIds    = new Set();
+const _quoteOrderCreated = new Set(); // quoteIds already converted to an order row
 
 async function fetchPaidOrders() {
   try {
@@ -3264,8 +3298,14 @@ async function fetchPaidOrders() {
     (data.orders || []).forEach(order => {
       if (_knownOrderIds.has(order.invoiceId)) return;
       _knownOrderIds.add(order.invoiceId);
-      prependOrderRow(order);
-      if (order.quoteId) markQuotePaid(order.quoteId);
+      // Only add a row if we haven't already created one manually for this quote
+      if (!order.quoteId || !_quoteOrderCreated.has(order.quoteId)) {
+        prependOrderRow(order);
+      }
+      if (order.quoteId) {
+        _quoteOrderCreated.add(order.quoteId);
+        markQuotePaid(order.quoteId);
+      }
       added++;
     });
     if (added > 0) {
@@ -3299,6 +3339,7 @@ function prependOrderRow(order) {
         <option value="Pending Deploy">Pending Deploy</option>
         <option value="Done">Done</option>
         <option value="Stuck">Stuck</option>
+        <option value="Working on it">Working on it</option>
         <option value="Scheduled">Scheduled</option>
         <option value="Failed">Failed</option>
       </select></td>
@@ -3328,6 +3369,7 @@ const STATUS_SLUG = {
   'Pending Deploy':     'pendingdeploy',
   'Done':               'done',
   'Stuck':              'stuck',
+  'Working on it':      'workingonit',
   // TrackPod statuses
   'Scheduled':          'scheduled',
   'InProgress':         'inprogress',   // reuses existing class
@@ -3465,9 +3507,7 @@ async function pollMondayStatuses() {
       const sel = entry.row.querySelector('select');
       if (sel && sel.value !== label) {
         sel.value = label;
-        applyOrderStatusClass(sel);
-        const mondayBtn = entry.row.querySelector('.btn-monday');
-        if (mondayBtn) mondayBtn.disabled = true;
+        updateOrderStatus(sel);   // handles Monday btn + TrackPod btn in one call
         showToast(`Order ${t.orderId} → "${label}" from Monday`, 'success');
       }
     });
@@ -3488,12 +3528,11 @@ function initOrderButtonStates() {
 }
 
 function markQuotePaid(quoteId) {
+  _quoteOrderCreated.add(quoteId); // prevent duplicate order row if manually set later
   const sel = document.querySelector(`select[data-quote="${quoteId}"]`);
   if (!sel) return;
-  // "Paid" is now a static option in every quote dropdown — just set it
   sel.value     = 'Paid';
   sel.className = 'quote-status-select status-paid';
-  // Hide the Send to QB button — no longer relevant once paid
   const btn = document.getElementById('sqb-' + quoteId);
   if (btn) btn.style.display = 'none';
 }
@@ -3720,6 +3759,8 @@ function showToast(message, type) {
 }
 .btn-monday:hover   { background: #d9243f; }
 .btn-monday:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Monday statuses */
+.quote-status-select.status-workingonit { background: #FFF4E6; color: #E09129; }
 /* TrackPod statuses */
 .quote-status-select.status-scheduled { background: #EEF2FF; color: #4F46E5; }
 .quote-status-select.status-failed    { background: #FEE2E2; color: #B91C1C; }
