@@ -428,8 +428,8 @@ app.post('/api/poll-now', async (req, res) => {
 });
 
 // ── Monday.com integration ─────────────────────────────────────────────────────
-const MONDAY_TOKEN    = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY2Mjg2Njg5OCwiYWFpIjoxMSwidWlkIjoxMDQyOTkxODQsImlhZCI6IjIwMjYtMDUtMjZUMDc6NTk6MjguNTc1WiIsInBlciI6Im1lOndyaXRlIiwiYWN0aWQiOjM1MzEyMDg0LCJyZ24iOiJldWMxIn0.fILmIOzrHcv2YWXc7Os9eS-tpkcWsKIjvTG7HlJ6E3I';
-const MONDAY_BOARD_ID = 5097226065;
+const MONDAY_TOKEN    = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjY2ODcyNDY5MywiYWFpIjoxMSwidWlkIjoxMDUxNTM0MjYsImlhZCI6IjIwMjYtMDYtMDlUMTI6MzE6MzQuMDU2WiIsInBlciI6Im1lOndyaXRlIiwiYWN0aWQiOjM1NTIzODU5LCJyZ24iOiJldWMxIn0.jzSLarPSDrIpz9_FZt5Z6zvO6i4XXWhgdnklZsBHFdw';
+const MONDAY_BOARD_ID = 5098206899;
 const MONDAY_API      = 'https://api.monday.com/v2';
 
 // Tracked Monday items: { mondayItemId, orderId, lastMondayStatus }
@@ -446,8 +446,7 @@ app.post('/api/send-to-monday', async (req, res) => {
 
   const itemName     = `${orderId} — ${clientName}`;
   const columnValues = JSON.stringify({
-    task_status: { index: 11 },   // "Ready to start"
-    task_type:   { index: 3  },   // "Other"
+    status: { label: 'Working on it' },   // "Working on it" — standard Monday default
   });
 
   const query = `
@@ -469,13 +468,13 @@ app.post('/api/send-to-monday', async (req, res) => {
     }
 
     const item = response.data.data?.create_item;
-    mondayTracked.push({ mondayItemId: item.id, orderId, lastMondayStatus: 'Ready to start' });
+    mondayTracked.push({ mondayItemId: item.id, orderId, lastMondayStatus: 'Working on it' });
     console.log(`✓ Monday task created — #${item.id} "${item.name}"`);
     res.json({
       success:      true,
       mondayItemId: item.id,
       itemName:     item.name,
-      mondayStatus: 'Ready to start',
+      mondayStatus: 'Working on it',
     });
   } catch (err) {
     console.error('Monday.com error:', err.response?.data || err.message);
@@ -492,7 +491,7 @@ app.get('/api/monday-status', (req, res) => {
 async function pollMondayStatuses() {
   if (mondayTracked.length === 0) return;
   const ids = mondayTracked.map(t => t.mondayItemId).join(', ');
-  const query = `{ items(ids: [${ids}]) { id column_values(ids: ["task_status"]) { text } } }`;
+  const query = `{ items(ids: [${ids}]) { id column_values(ids: ["status"]) { text } } }`;
   try {
     const response = await axios.post(MONDAY_API, { query }, { headers: mondayHeaders });
     const items = response.data.data?.items || [];
