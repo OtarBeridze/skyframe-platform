@@ -619,48 +619,99 @@ app.get('/api/trackpod-status', (req, res) => {
   res.json({ tracked: trackpodTracked });
 });
 
-// Poll TrackPod for status changes — batch via /Order/Status/Date/{since}
+// Map TrackPod RouteStatus → our app status label
+function routeStatusToLabel(routeStatus) {
+  switch (routeStatus) {
+    case 'Draft':
+    case 'Ready':
+    case 'Loaded':   return 'Scheduled';
+    case 'InProgress': return 'InProgress';
+    case 'Closed':   return 'Delivered';
+    default:         return null;
+  }
+}
+
+// Poll TrackPod for status changes
 async function pollTrackpodStatuses() {
   if (trackpodTracked.length === 0) return;
 
-  const since    = lastTrackpodPoll.toISOString();
-  lastTrackpodPoll = new Date(); // advance before request so we don't miss events
+  const trackedNumbers = new Map(trackpodTracked.map(t => [t.trackpodNumber, t]));
+  const today = new Date().toISOString().slice(0, 10);
 
+  // ── 1. Route-based polling (/Order/Route/Date/{date}) ──────────────────────
+  // Catches: Scheduled, InProgress, Delivered (via RouteStatus)
+  try {
+    const r = await axios.get(
+      `${TRACKPOD_BASE}/Order/Route/Date/${today}`,
+      { headers: trackpodHeaders },
+    );
+    const orders = Array.isArray(r.data) ? r.data : [];
+    orders.forEach(o => {
+      const entry = trackedNumbers.get(o.Number);
+      if (!entry) return;
+      const label = routeStatusToLabel(o.RouteStatus);
+      if (label && label !== entry.lastStatus) {
+        console.log(`↻ TrackPod ${o.Number} (${entry.orderId}): "${entry.lastStatus || 'Unscheduled'}" → "${label}" [Route: ${o.RouteStatus}]`);
+        entry.lastStatus = label;
+      }
+    });
+  } catch (err) { /* silent */ }
+
+  // ── 2. Delivery-outcome polling (/Order/Status/Date/{since}) ───────────────
+  // Catches: Delivered, NotDelivered, Canceled (via order Status field)
+  const since = lastTrackpodPoll.toISOString();
+  lastTrackpodPoll = new Date();
   try {
     const r = await axios.get(
       `${TRACKPOD_BASE}/Order/Status/Date/${encodeURIComponent(since)}`,
       { headers: trackpodHeaders },
     );
-
     const orders = Array.isArray(r.data) ? r.data : [];
-    const trackedNumbers = new Map(trackpodTracked.map(t => [t.trackpodNumber, t]));
-
     orders.forEach(o => {
       const entry  = trackedNumbers.get(o.Number);
       const status = o.Status || '';
       if (entry && status && status !== entry.lastStatus) {
-        console.log(`↻ TrackPod ${o.Number} (${entry.orderId}): "${entry.lastStatus || 'New'}" → "${status}"`);
+        console.log(`↻ TrackPod ${o.Number} (${entry.orderId}): "${entry.lastStatus}" → "${status}" [Order Status]`);
         entry.lastStatus = status;
       }
     });
-  } catch (err) {
-    // Fallback: poll each order individually if batch endpoint fails
-    for (const entry of trackpodTracked) {
-      try {
-        const r = await axios.get(
-          `${TRACKPOD_BASE}/Order/Number/${encodeURIComponent(entry.trackpodNumber)}`,
-          { headers: trackpodHeaders },
-        );
-        const status = r.data?.Status || '';
-        if (status && status !== entry.lastStatus) {
-          console.log(`↻ TrackPod ${entry.trackpodNumber} (${entry.orderId}): "${entry.lastStatus || 'New'}" → "${status}"`);
-          entry.lastStatus = status;
-        }
-      } catch { /* silent */ }
-    }
-  }
+  } catch (err) { /* silent */ }
 }
 setInterval(pollTrackpodStatuses, 20_000);
+
+// On startup: restore tracked orders from TrackPod (today's WebAPI orders)
+async function restoreTrackpodTracking() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const r = await axios.get(
+      `${TRACKPOD_BASE}/Order/Route/Date/${today}`,
+      { headers: trackpodHeaders },
+    );
+    const orders = Array.isArray(r.data) ? r.data : [];
+    orders.forEach(o => {
+      if (o.CreateSource !== 'WebApi') return;
+      if (trackpodTracked.find(t => t.trackpodNumber === o.Number)) return;
+      const label = routeStatusToLabel(o.RouteStatus) || '';
+      trackpodTracked.push({ orderId: o.Number, trackpodNumber: o.Number, lastStatus: label });
+      console.log(`↺ Restored TrackPod tracking: ${o.Number} [${label || 'Unscheduled'}]`);
+    });
+    // Also check unscheduled orders (not on a route yet)
+    const r2 = await axios.get(
+      `${TRACKPOD_BASE}/Order/Date/${today}`,
+      { headers: trackpodHeaders },
+    );
+    const all = Array.isArray(r2.data) ? r2.data : [];
+    all.forEach(o => {
+      if (o.CreateSource !== 'WebApi') return;
+      if (trackpodTracked.find(t => t.trackpodNumber === o.Number)) return;
+      trackpodTracked.push({ orderId: o.Number, trackpodNumber: o.Number, lastStatus: '' });
+      console.log(`↺ Restored TrackPod tracking: ${o.Number} [Unscheduled]`);
+    });
+  } catch (err) {
+    console.warn('TrackPod restore failed:', err.message);
+  }
+}
+restoreTrackpodTracking();
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
