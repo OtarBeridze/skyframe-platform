@@ -2691,6 +2691,8 @@ function savePrintingPrices() {
   if (!table) return;
 
   let updated = 0;
+  const errors = [];
+
   table.querySelectorAll('tbody tr').forEach(row => {
     const cells = row.querySelectorAll('td');
     if (cells.length < 8) return;
@@ -2699,26 +2701,47 @@ function savePrintingPrices() {
     const width   = cells[1].textContent.trim();
     const sizeKey = `${length}x${width}`;
 
-    const v = i => parseFloat(cells[i].textContent.trim()) || 0;
+    const v = i => {
+      const val = parseFloat(cells[i].textContent.trim());
+      return (isNaN(val) || val <= 0) ? null : val;
+    };
 
-    PRINTING_PRICES['STANDARD']['Standard'][sizeKey]         = v(2);
-    PRINTING_PRICES['STANDARD']['Multiple'][sizeKey]         = v(3);
-    PRINTING_PRICES['FINE ART']['Standard'][sizeKey]         = v(4);
-    PRINTING_PRICES['FINE ART']['Multiple'][sizeKey]         = v(5);
-    PRINTING_PRICES['GALLERY FINE ART']['Standard'][sizeKey] = v(6);
-    PRINTING_PRICES['GALLERY FINE ART']['Multiple'][sizeKey] = v(7);
+    const prices = [v(2), v(3), v(4), v(5), v(6), v(7)];
+    if (prices.some(p => p === null)) {
+      errors.push(sizeKey);
+      return;
+    }
+
+    PRINTING_PRICES['STANDARD']['Standard'][sizeKey]         = prices[0];
+    PRINTING_PRICES['STANDARD']['Multiple'][sizeKey]         = prices[1];
+    PRINTING_PRICES['FINE ART']['Standard'][sizeKey]         = prices[2];
+    PRINTING_PRICES['FINE ART']['Multiple'][sizeKey]         = prices[3];
+    PRINTING_PRICES['GALLERY FINE ART']['Standard'][sizeKey] = prices[4];
+    PRINTING_PRICES['GALLERY FINE ART']['Multiple'][sizeKey] = prices[5];
     updated++;
   });
 
-  // Recalculate configurator with new prices
-  updatePrice();
+  const statusEl = document.getElementById('printing-save-status');
 
-  const status = document.getElementById('printing-save-status');
-  if (status) {
-    status.textContent = `✓ ${updated} size rows saved — Configurator updated`;
-    setTimeout(() => { status.textContent = ''; }, 3000);
+  // Accumulate all error rows and show them together; clear after 3s
+  if (errors.length > 0) {
+    const errMsg = `⚠ Invalid prices in rows: ${errors.join(', ')} — values must be > 0`;
+    if (statusEl) {
+      statusEl.textContent = errMsg;
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    }
+    showToast(`${errors.length} row(s) skipped — invalid prices`, 'error');
   }
-  showToast(`Printing prices saved (${updated} sizes)`, 'success');
+
+  // Only show success feedback and recalculate when at least one row was saved
+  if (updated > 0) {
+    if (statusEl && errors.length === 0) {
+      statusEl.textContent = `✓ ${updated} size rows saved — Configurator updated`;
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    }
+    updatePrice();
+    showToast(`Printing prices saved (${updated} sizes)`, 'success');
+  }
 }
 
 // Maps each paper type to its price category
@@ -2843,6 +2866,8 @@ function updatePrice() {
     const printType = multiplePrints === 'multiple' ? 'Multiple' : 'Standard';
     if (sizeKey && priceSet[printType] && priceSet[printType][sizeKey]) {
       printPrice = priceSet[printType][sizeKey];
+    } else if (sizeKey) {
+      console.warn(`[Pricing] No print price for ${paperType} / ${printType} / ${sizeKey}`);
     }
   }
 
