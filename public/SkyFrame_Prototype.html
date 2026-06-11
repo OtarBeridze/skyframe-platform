@@ -2612,12 +2612,13 @@ function saveMarkupPercent() {
     showToast('Invalid markup value — enter a number like 0.28 or 28', 'error');
     return;
   }
-  // Accept both 0.28 and 28 formats
-  MARKUP_PERCENT = raw > 1 ? raw / 100 : raw;
-  // Guard: warn if input was exactly 1 — likely meant 1%, not 100%
+  // Guard ambiguous input: raw=1 could mean 1% (decimal) or 100% (percent) — reject and ask user to clarify
   if (raw === 1) {
-    showToast('Warning: markup set to 100%. Did you mean 1%? Enter 0.01 for 1%.', 'error');
+    showToast('Ambiguous value: enter 0.01 for 1% or 100 for 100%', 'error');
+    return;
   }
+  // Accept both 0.28 and 28 formats — normalize to decimal
+  MARKUP_PERCENT = raw > 1 ? raw / 100 : raw;
   // Normalise displayed value to decimal format
   cell.textContent = MARKUP_PERCENT.toFixed(2);
   // Update Live Quote label
