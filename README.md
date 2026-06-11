@@ -4,72 +4,141 @@ Internal operations platform for SkyFrame — a custom framing and fine art busi
 
 ## Overview
 
-SkyFrame Platform replaces manual Excel-based workflows with a modern web application for pricing configuration, invoice creation, order tracking, and third-party integrations.
+SkyFrame Platform replaces manual Excel-based workflows with a modern web application for pricing configuration, invoice creation, order tracking, delivery dispatch, and third-party integrations.
 
-**Status:** Phase 1 — Prototype & POC Integrations  
+**Status:** Phase 1 — Working prototype with live integrations  
 **Timeline:** 13 weeks (3 months)  
 **Budget:** ~$50K  
 **Team:** 5 engineers (2 fullstack, UI designer, engineer, DevOps)
 
 ## Tech Stack
 
-| Layer          | Technology       |
-|----------------|------------------|
-| Frontend       | React + TypeScript |
-| Backend        | .NET             |
-| Infrastructure | AWS              |
-| Integrations   | QuickBooks, Monday.com, TrackPod |
+### Production target
+
+| Layer          | Technology                          |
+|----------------|-------------------------------------|
+| Frontend       | React + TypeScript                  |
+| Backend        | Node.js (Express → Fastify)         |
+| Database       | PostgreSQL                          |
+| Infrastructure | AWS (ECS or Lambda)                 |
+| Integrations   | QuickBooks, Monday.com, TrackPod    |
+
+### Current POC
+
+| Component      | Implementation                      |
+|----------------|-------------------------------------|
+| Frontend       | Single-page HTML prototype (3858 lines) |
+| Backend        | Express.js monolith (768 lines)     |
+| Data storage   | In-memory (resets on restart)       |
+| Email          | Nodemailer + Ethereal (test)        |
+| PDF            | pdfkit                              |
+
+## Architecture
+
+```
+Browser (localhost:3000)
+    │
+    ▼
+Express.js Server (server.js)
+    ├── OAuth 2.0 flow (/auth/quickbooks, /callback)
+    ├── Invoice API (/api/create-invoice)
+    ├── Quote email + PDF (/api/send-quote-email)
+    ├── TrackPod routes (/api/send-to-trackpod, /api/trackpod-status)
+    ├── Monday.com routes (/api/send-to-monday, /api/monday-status)
+    ├── Orders tracking (/api/orders, /api/poll-now)
+    └── Background polling
+         ├── QuickBooks payment status (15s)
+         ├── Monday.com task status (20s)
+         └── TrackPod delivery status (20s)
+    │
+    ▼
+External Services
+    ├── QuickBooks Online (OAuth 2.0 + REST)
+    ├── Monday.com (GraphQL API)
+    ├── TrackPod (API Key + REST)
+    └── Ethereal SMTP (test emails)
+```
 
 ## Project Structure
 
 ```
 skyframe-platform/
-├── prototype/               # HTML prototype (clickable SPA)
-│   └── SkyFrame_Prototype.html
+├── public/
+│   └── SkyFrame_Prototype.html    # Full clickable prototype
+├── server.js                      # Express server with all integrations
+├── package.json                   # Dependencies: express, axios, pdfkit, nodemailer
+├── .env.example                   # Environment variables template
+├── .gitignore
 ├── integrations/
-│   ├── quickbooks/          # QuickBooks OAuth + invoice creation POC
-│   │   ├── quickbooks_integration.js
+│   ├── quickbooks/
+│   │   ├── quickbooks_integration.js   # Standalone QB POC script
 │   │   └── QuickBooks_Setup_Guide.md
-│   └── trackpod/            # TrackPod delivery API test
-│       └── trackpod-api-test.js
-├── docs/                    # Project documentation (RU)
+│   └── trackpod/
+│       └── trackpod-api-test.js        # API endpoint test suite
+├── docs/
 │   ├── SkyFrame_Meeting_Summary_RU.docx
 │   └── TrackPod_Integration_Guide_RU.docx
-├── scripts/                 # Utility scripts
-├── .env.example             # Environment variables template
-└── README.md
+└── prototype/
+    └── README.md
 ```
 
-## Prototype
+## Quick Start
 
-The HTML prototype demonstrates the full UI flow:
+```bash
+git clone https://github.com/OtarBeridze/skyframe-platform.git
+cd skyframe-platform
+npm install
+cp .env.example .env     # Fill in your credentials
+node server.js
+```
 
-- **Dashboard** — recent orders, activity feed, "+ New Order" button
-- **Pricing Configurator** — 16 sections matching Excel pricing logic with live quote panel
-- **Order Detail** — full field coverage (artwork, frames, matboards, glazing, backing, mounting)
-- **Client Detail** — editable fields with save/cancel
-- **Integrations** — QuickBooks, Monday.com, TrackPod status
+Open **http://localhost:3000**
 
-Open `prototype/SkyFrame_Prototype.html` in a browser to explore.
-
-## Integrations
+## Working Integrations
 
 ### QuickBooks Online
-- OAuth 2.0 flow for authorization
+- OAuth 2.0 authorization flow (`/auth/quickbooks` → `/callback`)
+- Customer lookup/creation in QBO sandbox
 - Invoice creation from configurator quote data
-- Payment status synchronization
-- See: `integrations/quickbooks/QuickBooks_Setup_Guide.md`
+- Automatic payment status polling (every 15s)
+- Order creation on payment detection
+- **Status:** ✅ Working (sandbox)
 
 ### TrackPod
-- REST API with simple API Key auth (no OAuth)
-- Order creation for delivery dispatch
-- Webhook-based status updates (ePOD)
-- See: `docs/TrackPod_Integration_Guide_RU.docx`
+- API Key authentication (no OAuth required)
+- Delivery order creation with randomized NYC addresses
+- Route-based status polling + delivery outcome polling (every 20s)
+- Auto-restore tracked orders on server restart
+- **Status:** ✅ Working (production API)
 
 ### Monday.com
-- Order status board integration
-- Triggered on payment confirmation
-- Planned for Phase 2
+- GraphQL API integration
+- Task creation on paid orders (`Working on it` status)
+- Status change polling (every 20s)
+- **Status:** ✅ Working
+
+### Quote Emails
+- PDF quote generation (pdfkit)
+- HTML email with SkyFrame branding
+- Ethereal test inbox for development
+- **Status:** ✅ Working (test email)
+
+## API Endpoints
+
+| Method | Path                       | Description                          |
+|--------|----------------------------|--------------------------------------|
+| GET    | `/`                        | Serve prototype                      |
+| GET    | `/auth/quickbooks`         | Start QuickBooks OAuth flow          |
+| GET    | `/callback`                | OAuth callback (token exchange)      |
+| GET    | `/api/qbo-status`          | Check QuickBooks connection          |
+| POST   | `/api/create-invoice`      | Create invoice in QuickBooks         |
+| POST   | `/api/send-quote-email`    | Send quote email with PDF            |
+| GET    | `/api/orders`              | Get tracked paid orders              |
+| POST   | `/api/poll-now`            | Trigger immediate payment check      |
+| POST   | `/api/send-to-monday`      | Create Monday.com task               |
+| GET    | `/api/monday-status`       | Get Monday.com tracked statuses      |
+| POST   | `/api/send-to-trackpod`    | Create TrackPod delivery order       |
+| GET    | `/api/trackpod-status`     | Get TrackPod tracked statuses        |
 
 ## Development Phases
 
@@ -77,47 +146,40 @@ Open `prototype/SkyFrame_Prototype.html` in a browser to explore.
 |-------|-------------------------------------|--------|
 | 1     | Auth + Pricing Configurator + QB    | 1–4    |
 | 2     | Order Management + Monday.com       | 5–7    |
-| 3     | Client Management                   | 8–9    |
+| 3     | Client Management + TrackPod        | 8–9    |
 | 4     | Pricing Administration              | 10     |
 | 5     | Analytics & Reporting               | 11–12  |
 | 6     | Final Polish & QA                   | 13     |
 
-## Setup
+## Production Roadmap
 
-```bash
-# Clone
-git clone https://github.com/<your-org>/skyframe-platform.git
-cd skyframe-platform
+Steps to evolve the current POC into production:
 
-# Copy environment template
-cp .env.example .env
-# Edit .env with your credentials
-
-# QuickBooks POC
-cd integrations/quickbooks
-npm install
-node quickbooks_integration.js
-
-# TrackPod API Test
-cd integrations/trackpod
-node trackpod-api-test.js
-```
+1. **TypeScript migration** — convert `server.js` to TypeScript, add strict types
+2. **Modularize routes** — split server.js into `/routes`, `/services`, `/middleware`
+3. **Database** — PostgreSQL for orders, clients, invoices, tokens (replace in-memory)
+4. **Environment config** — move all credentials from code to `.env` / AWS Secrets Manager
+5. **Webhooks** — replace polling with TrackPod webhooks + Monday.com webhooks
+6. **React frontend** — rewrite prototype as React + TypeScript components
+7. **Auth** — JWT-based user authentication (invite-only system)
+8. **AWS deployment** — ECS containers or Lambda + API Gateway
+9. **CI/CD** — GitHub Actions for testing, building, deploying
 
 ## Environment Variables
 
 See `.env.example` for required credentials. **Never commit `.env` to the repo.**
 
-## Team Contacts
+## Team
 
 - **Technical Lead:** Otar — weekly updates, technical questions
 - **Business Contact:** Jorge Morocho — organizational, business, financial
-- **Stakeholder:** George (+ Johnny)
+- **Stakeholders:** George, Johnny
 
 ## Documentation
 
-All internal documentation is in Russian:
-- `docs/SkyFrame_Meeting_Summary_RU.docx` — meeting protocol
-- `docs/TrackPod_Integration_Guide_RU.docx` — TrackPod API research
+Internal documentation (Russian):
+- `docs/SkyFrame_Meeting_Summary_RU.docx` — meeting protocol with action items
+- `docs/TrackPod_Integration_Guide_RU.docx` — TrackPod API feasibility research
 
 ---
 
