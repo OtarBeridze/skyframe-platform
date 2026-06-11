@@ -2890,59 +2890,78 @@ function updatePrice() {
     }
   }
 
-  // FRAME
-  const totalInches = (frameW + frameH) * 2;
+  // ID/OD CONVERSION — compute canonical inside and outside dimensions
+  let idW, idH, odW, odH;
+  if (dimMode === 'OD') {
+    odW = frameW; odH = frameH;
+    idW = frameW - 2 * mouldingWidth;
+    idH = frameH - 2 * mouldingWidth;
+  } else {
+    idW = frameW; idH = frameH;
+    odW = frameW + 2 * mouldingWidth;
+    odH = frameH + 2 * mouldingWidth;
+  }
+  // Guard: clamp negative ID to zero (small OD with wide moulding)
+  if (idW <= 0 || idH <= 0) {
+    console.warn('[Pricing] ID dimensions <= 0 — check frame size vs moulding width');
+    idW = 0; idH = 0;
+  }
+
+  // FRAME — perimeter uses OD (moulding stock is cut to OD length)
+  const totalInches = (odW + odH) * 2;
+  const totalSqFt   = idW && idH ? (idW * idH) / 144 : 0;
   document.getElementById('total-inches').value = totalInches;
+  document.getElementById('total-sqft').value   = totalSqFt.toFixed(2);
   if (frameIn > 0) {
     framePrice = totalInches * frameIn * finishMult + finishFixed;
     if (splinedCorners) framePrice += 100;
   }
 
-  // MATTING
-  if (matType && matConfig && frameW && frameH) {
-    const sizeKey = getSizeKey(frameW, frameH);
+  // MATTING — uses ID (mat covers the opening)
+  if (matType && matConfig && idW && idH) {
+    const sizeKey = getSizeKey(idW, idH);
     if (MATTING_PRICES[matType] && MATTING_PRICES[matType][matConfig] && MATTING_PRICES[matType][matConfig][sizeKey]) {
       mattingPrice = MATTING_PRICES[matType][matConfig][sizeKey];
     }
   }
 
-  // GLAZING
-  if (glazingType && frameW && frameH) {
-    const sizeKey = getSizeKey(frameW, frameH);
+  // GLAZING — uses ID (glass covers the opening)
+  if (glazingType && idW && idH) {
+    const sizeKey = getSizeKey(idW, idH);
     if (glazingMaterial === 'GLASS' && GLAZING_PRICES_GLASS[glazingType] && GLAZING_PRICES_GLASS[glazingType][sizeKey]) {
-      const sqft = (frameW * frameH) / 144;
+      const sqft = (idW * idH) / 144;
       glazingPrice = GLAZING_PRICES_GLASS[glazingType][sizeKey] * sqft;
     } else if (glazingMaterial === 'PLEXI' && GLAZING_PRICES_PLEXI[glazingType] && GLAZING_PRICES_PLEXI[glazingType][sizeKey]) {
-      const sqft = (frameW * frameH) / 144;
+      const sqft = (idW * idH) / 144;
       glazingPrice = GLAZING_PRICES_PLEXI[glazingType][sizeKey] * sqft;
     }
   }
 
-  // MOUNTING
-  if (mountingType && frameW && frameH) {
-    const sizeKey = getSizeKey(frameW, frameH);
+  // MOUNTING — uses ID (mounts against the artwork)
+  if (mountingType && idW && idH) {
+    const sizeKey = getSizeKey(idW, idH);
     if (MOUNTING_PRICES[mountingType] && MOUNTING_PRICES[mountingType][sizeKey]) {
       mountingPrice = MOUNTING_PRICES[mountingType][sizeKey];
     }
   }
 
   // MISCELLANEOUS & HARDWARE
-  miscPrice += hingingType; // Specialty hinging
-  miscPrice += miscLumpSum; // Lump sum
-  miscPrice += miscPerInch * totalInches; // Per inch
+  miscPrice += hingingType;
+  miscPrice += miscLumpSum;
+  miscPrice += miscPerInch * totalInches;
   if (crossbars) miscPrice += 0.30 * totalInches;
   if (spacers) miscPrice += 0.30 * totalInches;
   if (linenSpacer) miscPrice += 0.60 * totalInches;
   if (woodenSpacer) miscPrice += 0.90 * totalInches;
-  if (metalZclips) miscPrice += 1.00 * frameW; // Width only
+  if (metalZclips) miscPrice += 1.00 * odW; // Z-clips span OD back width
   if (strainers) miscPrice += 0.30 * totalInches;
   if (hwSecurityHangers) miscPrice += 12;
   if (hwEasels) miscPrice += 12;
   if (hwChloroplast) miscPrice += 25;
-  
-  // MIRROR
-  if (mirrorType > 0 && frameW && frameH) {
-    const sqft = (frameW * frameH) / 144;
+
+  // MIRROR — uses ID area (mirror covers the opening)
+  if (mirrorType > 0 && idW && idH) {
+    const sqft = (idW * idH) / 144;
     miscPrice += mirrorType * sqft;
   }
   if (bevelSize > 0) {
