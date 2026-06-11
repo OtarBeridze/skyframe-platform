@@ -2691,6 +2691,8 @@ function savePrintingPrices() {
   if (!table) return;
 
   let updated = 0;
+  const errors = [];
+
   table.querySelectorAll('tbody tr').forEach(row => {
     const cells = row.querySelectorAll('td');
     if (cells.length < 8) return;
@@ -2706,9 +2708,7 @@ function savePrintingPrices() {
 
     const prices = [v(2), v(3), v(4), v(5), v(6), v(7)];
     if (prices.some(p => p === null)) {
-      const status = document.getElementById('printing-save-status');
-      if (status) status.textContent = `⚠ Row ${sizeKey}: all price cells must be greater than 0`;
-      showToast(`Invalid price in row ${sizeKey} — all values must be > 0`, 'error');
+      errors.push(sizeKey);
       return;
     }
 
@@ -2721,15 +2721,24 @@ function savePrintingPrices() {
     updated++;
   });
 
-  // Recalculate configurator with new prices
-  updatePrice();
+  const statusEl = document.getElementById('printing-save-status');
 
-  const status = document.getElementById('printing-save-status');
-  if (status) {
-    status.textContent = `✓ ${updated} size rows saved — Configurator updated`;
-    setTimeout(() => { status.textContent = ''; }, 3000);
+  // Bug 2 fix: accumulate all error rows and show them together
+  if (errors.length > 0) {
+    const msg = `⚠ Invalid prices in rows: ${errors.join(', ')} — values must be > 0`;
+    if (statusEl) statusEl.textContent = msg;
+    showToast(`${errors.length} row(s) skipped — invalid prices`, 'error');
   }
-  showToast(`Printing prices saved (${updated} sizes)`, 'success');
+
+  // Bug 1 fix: only show success feedback when at least one row was saved
+  if (updated > 0) {
+    if (statusEl && errors.length === 0) {
+      statusEl.textContent = `✓ ${updated} size rows saved — Configurator updated`;
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    }
+    updatePrice();
+    showToast(`Printing prices saved (${updated} sizes)`, 'success');
+  }
 }
 
 // Maps each paper type to its price category
