@@ -2608,12 +2608,16 @@ let MARKUP_PERCENT = 0.28;
 function saveMarkupPercent() {
   const cell = document.getElementById('pa-markup-percent');
   const raw  = parseFloat(cell.textContent.trim().replace('%', ''));
-  if (isNaN(raw) || raw < 0) {
+  if (isNaN(raw) || raw <= 0) {
     showToast('Invalid markup value — enter a number like 0.28 or 28', 'error');
     return;
   }
   // Accept both 0.28 and 28 formats
   MARKUP_PERCENT = raw > 1 ? raw / 100 : raw;
+  // Guard: warn if input was exactly 1 — likely meant 1%, not 100%
+  if (raw === 1) {
+    showToast('Warning: markup set to 100%. Did you mean 1%? Enter 0.01 for 1%.', 'error');
+  }
   // Normalise displayed value to decimal format
   cell.textContent = MARKUP_PERCENT.toFixed(2);
   // Update Live Quote label
@@ -2974,7 +2978,7 @@ async function executeSendToClient() {
       { description: 'Mounting',           amount: parseAmt('price-mounting')  },
       { description: 'Misc & Hardware',    amount: parseAmt('price-misc')      },
       { description: 'Oversize Surcharge', amount: parseAmt('price-oversize')  },
-      { description: 'Markup (28%)',       amount: parseAmt('price-markup')    },
+      { description: `Markup (${Math.round(MARKUP_PERCENT * 100)}%)`, amount: parseAmt('price-markup')    },
     ].filter(l => l.amount > 0),
     subtotal: parseAmt('price-subtotal'),
     discount: parseAmt('price-discount'),
@@ -3016,7 +3020,7 @@ async function saveToQuickBooks() {
     { description: 'Mounting',           amount: parseAmount('price-mounting') },
     { description: 'Misc & Hardware',    amount: parseAmount('price-misc')     },
     { description: 'Oversize Surcharge', amount: parseAmount('price-oversize') },
-    { description: 'Markup (28%)',       amount: parseAmount('price-markup')   },
+    { description: `Markup (${Math.round(MARKUP_PERCENT * 100)}%)`, amount: parseAmount('price-markup')   },
     { description: 'NY Tax (8.875%)',    amount: parseAmount('price-tax')      },
   ].filter(l => l.amount > 0);
 
@@ -3080,7 +3084,7 @@ function previewQuote() {
     { label: 'Mounting',           id: 'price-mounting'  },
     { label: 'Misc & Hardware',    id: 'price-misc'      },
     { label: 'Oversize Surcharge', id: 'price-oversize'  },
-    { label: 'Markup (28%)',       id: 'price-markup'    },
+    { label: `Markup (${Math.round(MARKUP_PERCENT * 100)}%)`, id: 'price-markup'    },
   ].filter(l => parseFloat(getText(l.id).replace(/[$,]/g, '')) > 0);
 
   document.getElementById('preview-line-items').innerHTML = lines.map(l => {
@@ -3264,7 +3268,7 @@ async function downloadPDF() {
       { description: 'Mounting',           amount: getText('price-mounting')  },
       { description: 'Misc & Hardware',    amount: getText('price-misc')      },
       { description: 'Oversize Surcharge', amount: getText('price-oversize')  },
-      { description: 'Markup (28%)',       amount: getText('price-markup')    },
+      { description: `Markup (${Math.round(MARKUP_PERCENT * 100)}%)`, amount: getText('price-markup')    },
     ].filter(l => l.amount > 0),
     subtotal: getText('price-subtotal'),
     discount: getText('price-discount'),
