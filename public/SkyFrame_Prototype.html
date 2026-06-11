@@ -2831,7 +2831,13 @@ function updatePrice() {
   const printH = parseFloat(document.getElementById('print-height').value) || 0;
   const frameW = parseFloat(document.getElementById('frame-width').value) || 0;
   const frameH = parseFloat(document.getElementById('frame-height').value) || 0;
-  const frameIn = parseFloat(document.getElementById('frame-in').value) || 0;
+  // Defensive parse: supports both legacy "1.25" and new "1.25|2" (price|mouldingWidth) formats
+  const frameInRaw = document.getElementById('frame-in').value;
+  const frameInParts = frameInRaw.includes('|') ? frameInRaw.split('|') : [frameInRaw, '0'];
+  const frameIn = parseFloat(frameInParts[0]) || 0;
+  const mouldingWidth = parseFloat(frameInParts[1]) || 0;
+  // Guard: querySelector null-safe in case radio HTML hasn't loaded yet
+  const dimMode = (document.querySelector('input[name="dim-mode"]:checked') || { value: 'OD' }).value;
   const finish = document.getElementById('finish').value.split('|');
   const finishMult = parseFloat(finish[0]) || 1;
   const finishFixed = parseFloat(finish[1]) || 0;
