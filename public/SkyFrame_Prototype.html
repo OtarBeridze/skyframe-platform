@@ -674,6 +674,15 @@ select {
           <!-- 3. FRAME DIMENSIONS -->
           <div class="form-section">
             <h3>3. Frame Dimensions</h3>
+            <div style="margin-bottom:10px;">
+              <label style="margin-right:16px;font-weight:500;">Dimension mode:</label>
+              <label style="margin-right:16px;">
+                <input type="radio" name="dim-mode" value="ID" onchange="updatePrice()"> ID (Inside)
+              </label>
+              <label>
+                <input type="radio" name="dim-mode" value="OD" onchange="updatePrice()" checked> OD (Outside)
+              </label>
+            </div>
             <div class="form-grid-3">
               <div class="form-group">
                 <label>Frame Width (inches)</label>
@@ -686,6 +695,10 @@ select {
               <div class="form-group">
                 <label>Total Linear Inches</label>
                 <input type="text" id="total-inches" value="148" readonly style="background: var(--gray-light);">
+              </div>
+              <div class="form-group">
+                <label>Total Sq Ft</label>
+                <input type="text" id="total-sqft" value="0.00" readonly style="background: var(--gray-light);">
               </div>
             </div>
           </div>
