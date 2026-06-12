@@ -728,7 +728,7 @@ select {
             <div class="form-grid">
               <div class="form-group">
                 <label>Frame In</label>
-                <select id="frame-in" onchange="updatePrice()">
+                <select id="frame-in" onchange="onFrameInChange()">
                   <option value="|0">NO FRAME</option>
                   <option value="1.25|1.5">D-ASH ($1.25/in)</option>
                   <option value="1.75|1.75">JB-13 POPLAR ($1.75/in)</option>
@@ -762,7 +762,7 @@ select {
               </div>
               <div class="form-group">
                 <label>Floater Frame</label>
-                <select id="floater-frame" onchange="updatePrice()">
+                <select id="floater-frame" onchange="onFloaterChange()">
                   <option value="">NO FLOATER</option>
                   <option value="2|2.5">1/2" x 2" Floater (Poplar)</option>
                   <option value="2.5|3">1/2" x 3" Floater (Poplar)</option>
@@ -2849,6 +2849,19 @@ function getSizeKey(w, h) {
   return null;
 }
 
+function onFrameInChange() {
+  const sel = document.getElementById('frame-in');
+  const hasFrame = sel.value && sel.value !== '|0';
+  if (hasFrame) document.getElementById('floater-frame').value = '';
+  updatePrice();
+}
+
+function onFloaterChange() {
+  const sel = document.getElementById('floater-frame');
+  if (sel.value) document.getElementById('frame-in').value = '|0';
+  updatePrice();
+}
+
 function updatePrice() {
   // Get all values
   const paperType = document.getElementById('paper-type').value;
@@ -2868,6 +2881,11 @@ function updatePrice() {
   const finishMult = parseFloat(finish[0]) || 1;
   const finishFixed = parseFloat(finish[1]) || 0;
   const splinedCorners = document.getElementById('splined-corners').checked;
+  const frameOutRate = parseFloat(document.getElementById('frame-out').value) || 0;
+  const floaterRaw   = document.getElementById('floater-frame').value;
+  const floaterParts = floaterRaw ? floaterRaw.split('|') : ['0', '0'];
+  const floaterStd   = parseFloat(floaterParts[0]) || 0;
+  const floaterOvr   = parseFloat(floaterParts[1]) || 0;
   const matType = document.getElementById('mat-type').value;
   const matConfig = document.getElementById('mat-config').value;
   const glazingType = document.getElementById('glazing-type').value;
@@ -2941,8 +2959,21 @@ function updatePrice() {
   document.getElementById('total-inches').value = totalInches;
   document.getElementById('total-sqft').value   = totalSqFt.toFixed(2);
   if (frameIn > 0 && totalInches > 0) {
-    framePrice = totalInches * frameIn * finishMult + finishFixed;
+    framePrice += totalInches * frameIn * finishMult + finishFixed;
     if (splinedCorners) framePrice += 100;
+  }
+
+  // FRAME OUT / FILLET — OD perimeter, finish multiplier applies (not pre-finished stock)
+  // finishFixed is NOT added again — it is a one-time job cost, not per-moulding
+  if (frameOutRate > 0 && totalInches > 0) {
+    framePrice += totalInches * frameOutRate * finishMult;
+  }
+
+  // FLOATER FRAME — OD perimeter, no finish multiplier (floaters are pre-priced)
+  // Oversize tier: odW > 44" or odH > 64" (from Pricing Admin table header)
+  if (floaterStd > 0 && totalInches > 0) {
+    const floaterRate = (odW > 44 || odH > 64) ? floaterOvr : floaterStd;
+    framePrice += totalInches * floaterRate;
   }
 
   // MATTING — uses ID (mat covers the opening)
