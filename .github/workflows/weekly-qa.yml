@@ -1,0 +1,53 @@
+name: Weekly QA Report
+
+on:
+  schedule:
+    # Every Saturday at 4:00 AM UTC = 6:00 AM GMT+2
+    - cron: '0 4 * * 6'
+
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  qa-report:
+    name: Run QA Report & Email
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run QA Report
+        env:
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+          SMTP_HOST:        ${{ secrets.SMTP_HOST }}
+          SMTP_PORT:        ${{ secrets.SMTP_PORT }}
+          SMTP_USER:        ${{ secrets.SMTP_USER }}
+          SMTP_PASS:        ${{ secrets.SMTP_PASS }}
+          SMTP_FROM:        ${{ secrets.SMTP_FROM }}
+        run: node scripts/qa-report.js
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-report-${{ github.run_id }}
+          path: docs/reports/
+          retention-days: 90
+
+      - name: Commit report to repository
+        run: |
+          git config user.name "SkyFrame QA Bot"
+          git config user.email "qa-bot@skyframe.dev"
+          git add docs/reports/
+          git diff --staged --quiet || git commit -m "QA Report $(date +%Y-%m-%d)"
+          git push
+        continue-on-error: true
