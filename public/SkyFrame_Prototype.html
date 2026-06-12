@@ -2548,18 +2548,18 @@ select {
         <p style="color:var(--gray-mid);">Playwright end-to-end test suite — run locally or in CI</p>
         <div style="display:flex; gap:12px; align-items:center;">
           <span class="badge badge-approved" style="font-size:13px; padding:6px 14px;">Playwright v1.60</span>
-          <span class="badge badge-production" style="font-size:13px; padding:6px 14px;">35 Tests · 4 Suites</span>
+          <span class="badge badge-production" style="font-size:13px; padding:6px 14px;">61 Tests · 6 Suites</span>
         </div>
       </div>
 
       <!-- Stats row -->
       <div class="dashboard-grid" style="margin-bottom:40px;">
         <div class="stat-card">
-          <div class="stat-value">35</div>
+          <div class="stat-value">61</div>
           <div class="stat-label">Total Tests</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">4</div>
+          <div class="stat-value">6</div>
           <div class="stat-label">Test Suites</div>
         </div>
         <div class="stat-card">
@@ -2583,6 +2583,8 @@ select {
         <div><span style="color:#f9a8d4;">$</span> npm run test:ui</div>
         <div style="margin-top:12px;"><span style="color:#6ee7b7;">#</span> Open HTML report from last run</div>
         <div><span style="color:#f9a8d4;">$</span> npm run test:report</div>
+        <div style="margin-top:12px;"><span style="color:#6ee7b7;">#</span> Run Pricing Configurator tests only</div>
+        <div><span style="color:#f9a8d4;">$</span> npm test -- tests/configurator tests/pricing</div>
       </div>
 
       <!-- Test suites -->
