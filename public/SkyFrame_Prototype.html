@@ -68,12 +68,14 @@ nav .container {
   color: var(--black);
 }
 /* Sidebar */
-.layout { display: flex; min-height: calc(100vh - 65px); }
+.layout { display: flex; height: calc(100vh - 65px); overflow: hidden; }
 .sidebar {
   width: 240px;
   background: var(--black);
   color: var(--warm-white);
   padding: 32px 0;
+  flex-shrink: 0;
+  overflow-y: auto;
 }
 .menu-item {
   padding: 14px 24px;
@@ -267,7 +269,7 @@ select {
 /* Live Price Panel */
 .price-panel {
   position: sticky;
-  top: 40px;
+  top: 0;
   background: var(--black);
   color: var(--warm-white);
   padding: 32px;
@@ -1132,7 +1134,7 @@ select {
         </div>
 
         <!-- Live Price Panel -->
-        <div style="position: sticky; top: 24px; align-self: start;">
+        <div style="align-self: start;">
           <div class="price-panel">
             <h3>Live Quote</h3>
             <div id="price-breakdown">
