@@ -2917,7 +2917,7 @@ function updatePrice() {
   const totalSqFt   = idW && idH ? (idW * idH) / 144 : 0;
   document.getElementById('total-inches').value = totalInches;
   document.getElementById('total-sqft').value   = totalSqFt.toFixed(2);
-  if (frameIn > 0) {
+  if (frameIn > 0 && totalInches > 0) {
     framePrice = totalInches * frameIn * finishMult + finishFixed;
     if (splinedCorners) framePrice += 100;
   }
