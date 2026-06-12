@@ -2868,6 +2868,11 @@ function updatePrice() {
   const finishMult = parseFloat(finish[0]) || 1;
   const finishFixed = parseFloat(finish[1]) || 0;
   const splinedCorners = document.getElementById('splined-corners').checked;
+  const frameOutRate = parseFloat(document.getElementById('frame-out').value) || 0;
+  const floaterRaw   = document.getElementById('floater-frame').value;
+  const floaterParts = floaterRaw ? floaterRaw.split('|') : ['0', '0'];
+  const floaterStd   = parseFloat(floaterParts[0]) || 0;
+  const floaterOvr   = parseFloat(floaterParts[1]) || 0;
   const matType = document.getElementById('mat-type').value;
   const matConfig = document.getElementById('mat-config').value;
   const glazingType = document.getElementById('glazing-type').value;
@@ -2943,6 +2948,19 @@ function updatePrice() {
   if (frameIn > 0 && totalInches > 0) {
     framePrice = totalInches * frameIn * finishMult + finishFixed;
     if (splinedCorners) framePrice += 100;
+  }
+
+  // FRAME OUT / FILLET — OD perimeter, finish multiplier applies (not pre-finished stock)
+  // finishFixed is NOT added again — it is a one-time job cost, not per-moulding
+  if (frameOutRate > 0 && totalInches > 0) {
+    framePrice += totalInches * frameOutRate * finishMult;
+  }
+
+  // FLOATER FRAME — OD perimeter, no finish multiplier (floaters are pre-priced)
+  // Oversize tier: odW > 44" or odH > 64" (from Pricing Admin table header)
+  if (floaterStd > 0 && totalInches > 0) {
+    const floaterRate = (odW > 44 || odH > 64) ? floaterOvr : floaterStd;
+    framePrice += totalInches * floaterRate;
   }
 
   // MATTING — uses ID (mat covers the opening)
