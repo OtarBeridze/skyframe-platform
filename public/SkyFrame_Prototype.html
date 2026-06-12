@@ -270,6 +270,8 @@ select {
 .price-panel {
   position: sticky;
   top: 0;
+  max-height: calc(100vh - 65px - 80px); /* viewport - nav - main-content padding */
+  overflow-y: auto;
   background: var(--black);
   color: var(--warm-white);
   padding: 32px;
