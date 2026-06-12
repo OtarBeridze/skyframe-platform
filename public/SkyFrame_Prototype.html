@@ -2673,7 +2673,8 @@ function showView(viewId) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
   document.getElementById(viewId).classList.add('active');
-  event.target.closest('.menu-item').classList.add('active');
+  const menuEl = event.target.closest('.menu-item');
+  if (menuEl) menuEl.classList.add('active');
   const qs = document.getElementById('quote-sidebar');
   if (qs) qs.classList.toggle('visible', viewId === 'configurator');
 }
