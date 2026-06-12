@@ -674,6 +674,15 @@ select {
           <!-- 3. FRAME DIMENSIONS -->
           <div class="form-section">
             <h3>3. Frame Dimensions</h3>
+            <div style="margin-bottom:10px;">
+              <label style="margin-right:16px;font-weight:500;">Dimension mode:</label>
+              <label style="margin-right:16px;">
+                <input type="radio" name="dim-mode" value="ID" onchange="updatePrice()"> ID (Inside)
+              </label>
+              <label>
+                <input type="radio" name="dim-mode" value="OD" onchange="updatePrice()" checked> OD (Outside)
+              </label>
+            </div>
             <div class="form-grid-3">
               <div class="form-group">
                 <label>Frame Width (inches)</label>
@@ -687,6 +696,10 @@ select {
                 <label>Total Linear Inches</label>
                 <input type="text" id="total-inches" value="148" readonly style="background: var(--gray-light);">
               </div>
+              <div class="form-group">
+                <label>Total Sq Ft</label>
+                <input type="text" id="total-sqft" value="0.00" readonly style="background: var(--gray-light);">
+              </div>
             </div>
           </div>
 
@@ -697,13 +710,13 @@ select {
               <div class="form-group">
                 <label>Frame In</label>
                 <select id="frame-in" onchange="updatePrice()">
-                  <option value="">NO FRAME</option>
-                  <option value="1.25">D-ASH ($1.25/in)</option>
-                  <option value="1.75">JB-13 POPLAR ($1.75/in)</option>
-                  <option value="1.9">J-43 POPLAR ($1.9/in)</option>
-                  <option value="1.55">1.5" POPLAR ($1.55/in)</option>
-                  <option value="2.05">3" POPLAR ($2.05/in)</option>
-                  <option value="1.1" selected>C-MAPLE ($1.1/in)</option>
+                  <option value="|0">NO FRAME</option>
+                  <option value="1.25|1.5">D-ASH ($1.25/in)</option>
+                  <option value="1.75|1.75">JB-13 POPLAR ($1.75/in)</option>
+                  <option value="1.9|1.75">J-43 POPLAR ($1.9/in)</option>
+                  <option value="1.55|1.5">1.5" POPLAR ($1.55/in)</option>
+                  <option value="2.05|3">3" POPLAR ($2.05/in)</option>
+                  <option value="1.1|2" selected>C-MAPLE ($1.1/in)</option>
                 </select>
               </div>
               <div class="form-group">
@@ -2802,10 +2815,13 @@ const MOUNTING_PRICES = {
 };
 
 function getSizeKey(w, h) {
+  // Normalize to portrait so landscape inputs (e.g. 42x32) match the same tier as 32x42
+  const nw = Math.min(w, h);
+  const nh = Math.max(w, h);
   const sizes = ['8x10','11x14','16x20','18x24','20x24','20x30','22x28','24x30','24x36','30x40','32x40','36x48','40x40','40x50','40x60','40x72','40x84','40x96','48x48','48x50','48x60','48x72','48x84','48x96','48x108','48x120','58x58','58x72','58x84','58x96','60x60','60x72','60x84','60x96','60x102','60x104','72x72','72x84','72x96','72x108','72x120','96x120','101x151'];
   for (let s of sizes) {
     const [sw, sh] = s.split('x').map(Number);
-    if (w <= sw && h <= sh) return s;
+    if (nw <= sw && nh <= sh) return s;
   }
   return null;
 }
@@ -2818,7 +2834,13 @@ function updatePrice() {
   const printH = parseFloat(document.getElementById('print-height').value) || 0;
   const frameW = parseFloat(document.getElementById('frame-width').value) || 0;
   const frameH = parseFloat(document.getElementById('frame-height').value) || 0;
-  const frameIn = parseFloat(document.getElementById('frame-in').value) || 0;
+  // Defensive parse: supports both legacy "1.25" and new "1.25|2" (price|mouldingWidth) formats
+  const frameInRaw = document.getElementById('frame-in').value;
+  const frameInParts = frameInRaw.includes('|') ? frameInRaw.split('|') : [frameInRaw, '0'];
+  const frameIn = parseFloat(frameInParts[0]) || 0;
+  const mouldingWidth = parseFloat(frameInParts[1]) || 0;
+  // Guard: querySelector null-safe in case radio HTML hasn't loaded yet
+  const dimMode = (document.querySelector('input[name="dim-mode"]:checked') || { value: 'OD' }).value;
   const finish = document.getElementById('finish').value.split('|');
   const finishMult = parseFloat(finish[0]) || 1;
   const finishFixed = parseFloat(finish[1]) || 0;
@@ -2871,63 +2893,84 @@ function updatePrice() {
     }
   }
 
-  // FRAME
-  const totalInches = (frameW + frameH) * 2;
+  // ID/OD CONVERSION — compute canonical inside and outside dimensions
+  let idW, idH, odW, odH;
+  if (dimMode === 'OD') {
+    odW = frameW; odH = frameH;
+    idW = frameW - 2 * mouldingWidth;
+    idH = frameH - 2 * mouldingWidth;
+  } else {
+    idW = frameW; idH = frameH;
+    odW = frameW + 2 * mouldingWidth;
+    odH = frameH + 2 * mouldingWidth;
+  }
+  // Guard: clamp both ID and OD to zero for physically impossible frames
+  // (OD smaller than 2×moulding width — invalid input, price everything as $0)
+  if (idW <= 0 || idH <= 0) {
+    console.warn('[Pricing] ID dimensions <= 0 — check frame size vs moulding width');
+    idW = 0; idH = 0; odW = 0; odH = 0;
+  }
+
+  // FRAME — perimeter uses OD (moulding stock is cut to OD length)
+  const totalInches = (odW + odH) * 2;
+  const idPerimeter = (idW + idH) * 2;  // bevel is cut on the rabbet edge — ID-based
+  const totalSqFt   = idW && idH ? (idW * idH) / 144 : 0;
   document.getElementById('total-inches').value = totalInches;
-  if (frameIn > 0) {
+  document.getElementById('total-sqft').value   = totalSqFt.toFixed(2);
+  if (frameIn > 0 && totalInches > 0) {
     framePrice = totalInches * frameIn * finishMult + finishFixed;
     if (splinedCorners) framePrice += 100;
   }
 
-  // MATTING
-  if (matType && matConfig && frameW && frameH) {
-    const sizeKey = getSizeKey(frameW, frameH);
+  // MATTING — uses ID (mat covers the opening)
+  if (matType && matConfig && idW && idH) {
+    const sizeKey = getSizeKey(idW, idH);
     if (MATTING_PRICES[matType] && MATTING_PRICES[matType][matConfig] && MATTING_PRICES[matType][matConfig][sizeKey]) {
       mattingPrice = MATTING_PRICES[matType][matConfig][sizeKey];
     }
   }
 
-  // GLAZING
-  if (glazingType && frameW && frameH) {
-    const sizeKey = getSizeKey(frameW, frameH);
+  // GLAZING — uses ID (glass covers the opening)
+  if (glazingType && idW && idH) {
+    const sizeKey = getSizeKey(idW, idH);
     if (glazingMaterial === 'GLASS' && GLAZING_PRICES_GLASS[glazingType] && GLAZING_PRICES_GLASS[glazingType][sizeKey]) {
-      const sqft = (frameW * frameH) / 144;
+      const sqft = (idW * idH) / 144;
       glazingPrice = GLAZING_PRICES_GLASS[glazingType][sizeKey] * sqft;
     } else if (glazingMaterial === 'PLEXI' && GLAZING_PRICES_PLEXI[glazingType] && GLAZING_PRICES_PLEXI[glazingType][sizeKey]) {
-      const sqft = (frameW * frameH) / 144;
+      const sqft = (idW * idH) / 144;
       glazingPrice = GLAZING_PRICES_PLEXI[glazingType][sizeKey] * sqft;
     }
   }
 
-  // MOUNTING
-  if (mountingType && frameW && frameH) {
-    const sizeKey = getSizeKey(frameW, frameH);
+  // MOUNTING — uses ID (mounts against the artwork)
+  if (mountingType && idW && idH) {
+    const sizeKey = getSizeKey(idW, idH);
     if (MOUNTING_PRICES[mountingType] && MOUNTING_PRICES[mountingType][sizeKey]) {
       mountingPrice = MOUNTING_PRICES[mountingType][sizeKey];
     }
   }
 
   // MISCELLANEOUS & HARDWARE
-  miscPrice += hingingType; // Specialty hinging
-  miscPrice += miscLumpSum; // Lump sum
-  miscPrice += miscPerInch * totalInches; // Per inch
+  miscPrice += hingingType;
+  miscPrice += miscLumpSum;
+  miscPrice += miscPerInch * totalInches;
   if (crossbars) miscPrice += 0.30 * totalInches;
   if (spacers) miscPrice += 0.30 * totalInches;
   if (linenSpacer) miscPrice += 0.60 * totalInches;
   if (woodenSpacer) miscPrice += 0.90 * totalInches;
-  if (metalZclips) miscPrice += 1.00 * frameW; // Width only
-  if (strainers) miscPrice += 0.30 * totalInches;
+  if (metalZclips) miscPrice += 1.00 * odW; // Z-clips span OD back width
+  if (strainers) miscPrice += 0.30 * idPerimeter; // strainer bars cut to ID opening
   if (hwSecurityHangers) miscPrice += 12;
   if (hwEasels) miscPrice += 12;
   if (hwChloroplast) miscPrice += 25;
-  
-  // MIRROR
-  if (mirrorType > 0 && frameW && frameH) {
-    const sqft = (frameW * frameH) / 144;
+
+  // MIRROR — uses ID area (mirror covers the opening)
+  if (mirrorType > 0 && idW && idH) {
+    const sqft = (idW * idH) / 144;
     miscPrice += mirrorType * sqft;
   }
   if (bevelSize > 0) {
-    miscPrice += bevelSize * totalInches;
+    miscPrice += bevelSize * idPerimeter;
   }
 
   // PACKAGING
