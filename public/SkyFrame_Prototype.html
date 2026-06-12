@@ -2959,7 +2959,7 @@ function updatePrice() {
   if (linenSpacer) miscPrice += 0.60 * totalInches;
   if (woodenSpacer) miscPrice += 0.90 * totalInches;
   if (metalZclips) miscPrice += 1.00 * odW; // Z-clips span OD back width
-  if (strainers) miscPrice += 0.30 * totalInches;
+  if (strainers) miscPrice += 0.30 * idPerimeter; // strainer bars cut to ID opening
   if (hwSecurityHangers) miscPrice += 12;
   if (hwEasels) miscPrice += 12;
   if (hwChloroplast) miscPrice += 25;
