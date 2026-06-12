@@ -524,6 +524,10 @@ select {
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
       Users & Roles
     </div>
+    <div class="menu-item" onclick="showView('qa-automation')">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C.817 14.769 2.156 18 4.828 18h10.344c2.672 0 4.011-3.231 2.122-5.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.027 1.028a4 4 0 00-2.171.102l-.47.156a4 4 0 01-2.53 0l-.563-.187a1.993 1.993 0 00-.114-.035l1.063-1.063A3 3 0 009 8.172z" clip-rule="evenodd"></path></svg>
+      QA Automation
+    </div>
   </aside>
 
   <!-- Main Content -->
@@ -2531,6 +2535,145 @@ select {
         </tbody>
       </table>
     </div>
+
+    <!-- QA AUTOMATION VIEW -->
+    <div id="qa-automation" class="view">
+      <h1>QA Automation</h1>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+        <p style="color:var(--gray-mid);">Playwright end-to-end test suite — run locally or in CI</p>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span class="badge badge-approved" style="font-size:13px; padding:6px 14px;">Playwright v1.60</span>
+          <span class="badge badge-production" style="font-size:13px; padding:6px 14px;">35 Tests · 4 Suites</span>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="dashboard-grid" style="margin-bottom:40px;">
+        <div class="stat-card">
+          <div class="stat-value">35</div>
+          <div class="stat-label">Total Tests</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">4</div>
+          <div class="stat-label">Test Suites</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Areas Covered</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="font-size:20px;">Chromium</div>
+          <div class="stat-label">Browser</div>
+        </div>
+      </div>
+
+      <!-- How to run -->
+      <h2 style="margin-bottom:16px;">Run Tests</h2>
+      <div style="background:var(--black); color:var(--warm-white); border-radius:8px; padding:24px 28px; margin-bottom:40px; font-family:monospace; font-size:13px; line-height:2;">
+        <div><span style="color:#6ee7b7;">#</span> Install Playwright browsers (first time only)</div>
+        <div><span style="color:#f9a8d4;">$</span> npx playwright install chromium</div>
+        <div style="margin-top:12px;"><span style="color:#6ee7b7;">#</span> Run all tests (requires server on port 3000)</div>
+        <div><span style="color:#f9a8d4;">$</span> npm test</div>
+        <div style="margin-top:12px;"><span style="color:#6ee7b7;">#</span> Interactive UI mode</div>
+        <div><span style="color:#f9a8d4;">$</span> npm run test:ui</div>
+        <div style="margin-top:12px;"><span style="color:#6ee7b7;">#</span> Open HTML report from last run</div>
+        <div><span style="color:#f9a8d4;">$</span> npm run test:report</div>
+      </div>
+
+      <!-- Test suites -->
+      <h2 style="margin-bottom:24px;">Test Suites</h2>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+        <!-- Frame Pricing -->
+        <div style="background:var(--warm-white); border:1px solid var(--gray-light); border-radius:8px; padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:15px;">Frame Pricing</h3>
+            <span class="badge badge-approved">14 tests</span>
+          </div>
+          <div style="color:var(--gray-mid); font-size:12px; margin-bottom:12px;">tests/pricing/frame-pricing.spec.js</div>
+          <table style="font-size:13px; width:100%;">
+            <tbody>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Frame In C-MAPLE 32×42 OD → $162.80</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Custom Lacquer finishFixed added once → $405.60</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Splined corners +$100 surcharge</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Frame Out + Frame In + WHITE → $347.80</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Frame Out with Custom Lacquer → $775.60</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Fillet only (no Frame In) → $259.00</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Floater standard 32×42 → $296.00</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Floater oversize odW &gt; 44 → ovr rate</td></tr>
+              <tr><td style="padding:5px 0;">Floater oversize odH &gt; 64 → ovr rate</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ID/OD + Mutual Exclusivity -->
+        <div style="background:var(--warm-white); border:1px solid var(--gray-light); border-radius:8px; padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:15px;">ID / OD + Exclusivity</h3>
+            <span class="badge badge-approved">8 tests</span>
+          </div>
+          <div style="color:var(--gray-mid); font-size:12px; margin-bottom:12px;">tests/pricing/id-od.spec.js</div>
+          <table style="font-size:13px; width:100%;">
+            <tbody>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">OD 32×42 → totalInches 148</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">ID 28×38 (equiv. OD 32×42) → totalInches 148</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">OD and ID modes produce identical frame price</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Total Sq Ft uses ID area (not OD)</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">OD radio checked by default</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Frame In moulding clears Floater Frame</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Floater Frame resets Frame In to NO FRAME</td></tr>
+              <tr><td style="padding:5px 0;">NO FRAME selection does not clear Floater</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Navigation -->
+        <div style="background:var(--warm-white); border:1px solid var(--gray-light); border-radius:8px; padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:15px;">Navigation & Layout</h3>
+            <span class="badge badge-approved">10 tests</span>
+          </div>
+          <div style="color:var(--gray-mid); font-size:12px; margin-bottom:12px;">tests/navigation/navigation.spec.js</div>
+          <table style="font-size:13px; width:100%;">
+            <tbody>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Left sidebar visible on Dashboard</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Sidebar stays visible on Configurator scroll</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Sidebar stays visible on Orders scroll</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Clicking menu item marks it active</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Only one menu item active at a time</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Quote panel visible on Configurator</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Quote panel hidden on Dashboard / Orders / Clients</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Quote panel stays within viewport on scroll</td></tr>
+              <tr><td style="padding:5px 0;">Switching away from Configurator hides panel</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Configurator -->
+        <div style="background:var(--warm-white); border:1px solid var(--gray-light); border-radius:8px; padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:15px;">Configurator Form</h3>
+            <span class="badge badge-approved">9 tests</span>
+          </div>
+          <div style="color:var(--gray-mid); font-size:12px; margin-bottom:12px;">tests/configurator/configurator.spec.js</div>
+          <table style="font-size:13px; width:100%;">
+            <tbody>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Total Linear Inches updates on dimension change</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Total Sq Ft updates correctly (24×36 → 6.00)</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Total inches / sq ft fields are read-only</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">OD mode: totalInches always from entered OD</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Landscape 42×32 = portrait 32×42 (getSizeKey fix)</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Configurator view activates on menu click</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Live Quote shows frame price line</td></tr>
+              <tr><td style="padding:5px 0; border-bottom:1px solid var(--gray-light);">Live Quote shows total price line</td></tr>
+              <tr><td style="padding:5px 0;">"+ New Order" button opens Configurator</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+    <!-- /QA AUTOMATION VIEW -->
 
   </main>
 
