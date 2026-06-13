@@ -1,0 +1,8 @@
+[
+  { "id": 6, "date": "2026-06-13T18:01:00.000Z", "tests": 84, "passed": 84, "failed": 0, "duration": 21, "status": "PASSED" },
+  { "id": 5, "date": "2026-06-13T06:00:00.000Z", "tests": 61, "passed": 61, "failed": 0, "duration": 15, "status": "PASSED" },
+  { "id": 4, "date": "2026-06-12T18:00:00.000Z", "tests": 61, "passed": 61, "failed": 0, "duration": 15, "status": "PASSED" },
+  { "id": 3, "date": "2026-06-12T14:30:00.000Z", "tests": 40, "passed": 40, "failed": 0, "duration": 12, "status": "PASSED" },
+  { "id": 2, "date": "2026-06-12T12:15:00.000Z", "tests": 40, "passed": 39, "failed": 1, "duration": 12, "status": "FAILED" },
+  { "id": 1, "date": "2026-06-11T20:00:00.000Z", "tests": 35, "passed": 35, "failed": 0, "duration": 10, "status": "PASSED" }
+]
