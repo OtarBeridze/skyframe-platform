@@ -2,7 +2,10 @@ name: Daily Playwright Tests
 
 on:
   schedule:
-    - cron: '0 18 * * *'  # 20:00 GMT+2
+    # Every day at 18:00 UTC = 20:00 GMT+2
+    - cron: '0 18 * * *'
+
+  # Allow manual trigger from GitHub Actions tab
   workflow_dispatch:
 
 permissions:
@@ -14,9 +17,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
 
