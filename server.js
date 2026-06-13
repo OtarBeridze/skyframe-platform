@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
+const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 const nodemailer = require('nodemailer');
@@ -759,6 +760,38 @@ async function findServiceItem(realmId, headers) {
 
   throw new Error('No Service items found in QuickBooks. Please create one in your QBO sandbox first.');
 }
+
+// ── Test Runs ──────────────────────────────────────────────────────────────────
+
+const TEST_RUNS_FILE = path.join(__dirname, 'data', 'test-runs.json');
+
+function readTestRuns() {
+  try { return JSON.parse(fs.readFileSync(TEST_RUNS_FILE, 'utf8')); }
+  catch { return []; }
+}
+
+function writeTestRuns(runs) {
+  fs.mkdirSync(path.dirname(TEST_RUNS_FILE), { recursive: true });
+  fs.writeFileSync(TEST_RUNS_FILE, JSON.stringify(runs, null, 2));
+}
+
+app.get('/api/test-runs', (req, res) => {
+  res.json(readTestRuns());
+});
+
+app.post('/api/test-runs', (req, res) => {
+  const { tests, passed, failed, duration, status } = req.body;
+  if (typeof tests !== 'number' || typeof passed !== 'number' || typeof failed !== 'number') {
+    return res.status(400).json({ success: false, error: 'tests, passed, failed must be numbers' });
+  }
+  const runs = readTestRuns();
+  const id   = runs.length > 0 ? Math.max(...runs.map(r => r.id)) + 1 : 1;
+  const run  = { id, date: new Date().toISOString(), tests, passed, failed, duration: duration || 0, status: status || (failed === 0 ? 'PASSED' : 'FAILED') };
+  runs.unshift(run);
+  writeTestRuns(runs);
+  console.log(`[TestRuns] Run #${id} recorded: ${passed}/${tests} passed (${run.status})`);
+  res.json({ success: true, run });
+});
 
 // ── Start ──────────────────────────────────────────────────────────────────────
 

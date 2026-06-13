@@ -1,0 +1,49 @@
+name: Daily Playwright Tests
+
+on:
+  schedule:
+    - cron: '0 18 * * *'  # 20:00 GMT+2
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  e2e:
+    name: Run E2E Tests (Chromium)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm install --no-package-lock
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        run: npm test
+
+      - name: Record test results
+        if: always()
+        run: |
+          node scripts/record-test-run.js
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/test-runs.json
+          git diff --staged --quiet || git commit -m "ci: record test run results [skip ci]"
+          git push
+        continue-on-error: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: playwright-report/
+          retention-days: 30
