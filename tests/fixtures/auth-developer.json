@@ -1,0 +1,12 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        { "name": "skyframe-auth", "value": "developer" },
+        { "name": "skyframe-role", "value": "developer" }
+      ]
+    }
+  ]
+}

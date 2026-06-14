@@ -14,6 +14,10 @@ module.exports = defineConfig({
     headless: true,
     screenshot: 'only-on-failure',
     video: 'off',
+    // Seed an authenticated (Developer) session so feature specs land directly in
+    // the app, past the login gate. The login/RBAC spec opts out to a logged-out
+    // state via test.use({ storageState: { cookies: [], origins: [] } }).
+    storageState: './tests/fixtures/auth-developer.json',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
