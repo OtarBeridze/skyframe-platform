@@ -299,15 +299,15 @@ tr:last-child td { border-bottom: none; }
 
 /* Buttons */
 .btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
-  letter-spacing: 0.03em;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -320,7 +320,7 @@ tr:last-child td { border-bottom: none; }
 .btn-secondary:hover { background: #2A2A2A; }
 .btn-outline { background: transparent; border: 1px solid var(--gray-mid); color: var(--black); }
 .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-.btn-sm { padding: 6px 12px; font-size: 11px; }
+.btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 4px; }
 .btn-monday { background: #e2445c; color: #fff; }
 .btn-monday:hover { background: #c73650; }
 .btn-trackpod { background: #0052cc; color: #fff; }
@@ -485,121 +485,130 @@ tr:last-child td { border-bottom: none; }
 /* Configurator */
 .configurator-layout {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 32px;
+  grid-template-columns: 1fr 380px;
+  gap: 40px;
   align-items: start;
-  height: 100%;
-}
-.configurator-form {
-  overflow-y: auto;
-  padding-right: 8px;
 }
 .configurator-form h1 {
-  font-size: 28px;
+  font-size: 36px;
   margin-bottom: 24px;
 }
 .form-section {
   background: white;
   border: 1px solid var(--gray-light);
   border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
 }
 .form-section h3 {
-  font-size: 14px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--gray-dark);
-  margin-bottom: 16px;
-  padding-bottom: 10px;
+  /* Match prototype: serif, 22px, weight 500 — inherits from global h3 rule */
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--black);
+  text-transform: none;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--gray-light);
 }
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: 24px;
+  margin-bottom: 20px;
 }
 .form-grid:last-child { margin-bottom: 0; }
 .form-grid-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: 24px;
+  margin-bottom: 20px;
 }
 .form-grid-3:last-child { margin-bottom: 0; }
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 .form-group label {
-  font-size: 11px;
+  display: block;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--gray-dark);
+  margin-bottom: 8px;
 }
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 9px 12px;
+  width: 100%;
+  padding: 12px;
   border: 1px solid var(--gray-light);
-  border-radius: 6px;
+  border-radius: 4px;
   font-family: 'Montserrat', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   background: white;
   color: var(--black);
-  width: 100%;
+}
+.form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8784' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
 }
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: var(--gold);
 }
 
-/* Quote sidebar */
+/* Quote sidebar — sticky so it stays in view while form scrolls */
 .quote-sidebar {
   position: sticky;
-  top: 24px;
+  top: 40px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 .price-panel {
   background: var(--black);
   color: var(--warm-white);
-  border-radius: 10px;
-  padding: 24px;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 .price-panel h3 {
   font-family: 'Cormorant Garamond', serif;
   font-size: 22px;
   font-weight: 500;
   color: var(--gold);
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 24px;
 }
 .price-line {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 7px 0;
+  padding: 12px 0;
   font-size: 13px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(201, 168, 106, 0.2);
 }
 .price-line:last-child { border-bottom: none; }
 .price-line.total {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--gold);
-  border-top: 1px solid rgba(255,255,255,0.15);
+  font-weight: 600;
+  font-size: 16px;
+  padding-top: 20px;
+  margin-top: 12px;
+  border-top: 2px solid var(--gold);
   border-bottom: none;
-  padding-top: 10px;
-  margin-top: 4px;
 }
 .price-amount {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gold);
+}
+.price-line.total .price-amount {
+  font-size: 32px;
 }

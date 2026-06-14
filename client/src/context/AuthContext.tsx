@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { Role, User, PageId } from '../types';
 import { USERS, ROLE_PAGES } from '../constants/rbac';
 
@@ -12,19 +12,19 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [currentRole, setCurrentRole] = useState<Role | null>(null);
+function restoreSession(): { user: User | null; role: Role | null } {
+  const savedLogin = localStorage.getItem('skyframe-auth');
+  if (savedLogin && USERS[savedLogin]) {
+    const u = USERS[savedLogin];
+    return { user: { login: savedLogin, role: u.role, name: u.name }, role: u.role };
+  }
+  return { user: null, role: null };
+}
 
-  // Restore session from localStorage on mount
-  useEffect(() => {
-    const savedLogin = localStorage.getItem('skyframe-auth');
-    if (savedLogin && USERS[savedLogin]) {
-      const u = USERS[savedLogin];
-      setUser({ login: savedLogin, role: u.role, name: u.name });
-      setCurrentRole(u.role);
-    }
-  }, []);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const initial = restoreSession();
+  const [user, setUser] = useState<User | null>(initial.user);
+  const [currentRole, setCurrentRole] = useState<Role | null>(initial.role);
 
   function login(loginInput: string, password: string): boolean {
     const key = loginInput.trim().toLowerCase();
