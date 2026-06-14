@@ -100,3 +100,10 @@ When asked about pricing:
 - When migrating to React, keep the calculation logic **pure** (no DOM access) — separate concerns
 - Always verify: does the change affect the QB invoice line items? (`/api/create-invoice` payload)
 - Test with a known example: Frame 32×42, Classic Black Oak ($2.20/in), no matting, Museum Glass, Drymount → verify total matches expected
+
+## Response protocol
+
+Always begin every response with a single acknowledgment line:
+**Task received:** [one-sentence summary of what was asked]
+
+Then proceed with your answer.

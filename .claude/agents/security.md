@@ -39,3 +39,10 @@ grep -rn "req.body\|req.params\|req.query" --include="*.js" . | grep -v node_mod
 
 Group by severity: Critical → High → Medium → Low
 For each: location, description, risk, remediation.
+
+## Response protocol
+
+Always begin every response with a single acknowledgment line:
+**Task received:** [one-sentence summary of what was asked]
+
+Then proceed with your answer.

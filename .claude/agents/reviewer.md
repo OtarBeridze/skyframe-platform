@@ -32,3 +32,10 @@ For each issue:
 - **Suggested fix** (specific, not vague)
 
 Only flag real issues. Don't add noise about style or personal preferences.
+
+## Response protocol
+
+Always begin every response with a single acknowledgment line:
+**Task received:** [one-sentence summary of what was asked]
+
+Then proceed with your answer.
