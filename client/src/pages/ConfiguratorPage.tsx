@@ -58,7 +58,7 @@ export default function ConfiguratorPage() {
   const { markupPercent } = usePricing();
   const [inputs, setInputs] = useState<PricingInputs>({ ...DEFAULT_INPUTS, markupPercent });
   const [ui, setUi] = useState<UIState>(DEFAULT_UI);
-  const [sidebarAction, setSidebarAction] = useState<string | null>(null);
+  const [sidebarAction, setSidebarAction] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   const set = useCallback(<K extends keyof PricingInputs>(key: K, value: PricingInputs[K]) => {
     setInputs(prev => ({ ...prev, [key]: value }));
@@ -67,10 +67,19 @@ export default function ConfiguratorPage() {
   const setU = <K extends keyof UIState>(key: K, value: UIState[K]) =>
     setUi(prev => ({ ...prev, [key]: value }));
 
-  // Parse "pricePerIn|mouldingWidth" format from frame-in select
+  // Parse "pricePerIn|mouldingWidth" format from frame-in select.
+  // Selecting any frame clears floater (mutually exclusive — matches prototype onFrameInChange).
   const handleFrameIn = (raw: string) => {
     const [r, mw] = raw.split('|');
-    setInputs(prev => ({ ...prev, frameInRate: parseFloat(r) || 0, mouldingWidth: parseFloat(mw) || 0 }));
+    const rate = parseFloat(r) || 0;
+    const width = parseFloat(mw) || 0;
+    setInputs(prev => ({
+      ...prev,
+      frameInRate: rate,
+      mouldingWidth: width,
+      // clear floater when a real frame-in is chosen
+      ...(rate > 0 ? { floaterStd: 0, floaterOvr: 0 } : {}),
+    }));
   };
 
   // Parse "mult|fixed" format from finish select
@@ -79,13 +88,21 @@ export default function ConfiguratorPage() {
     setInputs(prev => ({ ...prev, finishMult: parseFloat(m) || 1, finishFixed: parseFloat(f) || 0 }));
   };
 
-  // Parse "std|ovr" format from floater select
+  // Parse "std|ovr" format from floater select.
+  // Selecting any floater clears frame-in (mutually exclusive — matches prototype onFloaterChange).
   const handleFloater = (raw: string) => {
     if (!raw) {
       setInputs(prev => ({ ...prev, floaterStd: 0, floaterOvr: 0 }));
     } else {
       const [s, o] = raw.split('|');
-      setInputs(prev => ({ ...prev, floaterStd: parseFloat(s) || 0, floaterOvr: parseFloat(o) || 0 }));
+      setInputs(prev => ({
+        ...prev,
+        floaterStd: parseFloat(s) || 0,
+        floaterOvr: parseFloat(o) || 0,
+        // clear frame-in when floater is chosen
+        frameInRate: 0,
+        mouldingWidth: 0,
+      }));
     }
   };
 
@@ -93,9 +110,34 @@ export default function ConfiguratorPage() {
   const price = usePrice(priceInputs);
   const markupPct = Math.round(markupPercent * 100);
 
-  function handleSend() {
+  async function handleSend() {
+    if (sidebarAction === 'sending') return;
     setSidebarAction('sending');
-    setTimeout(() => setSidebarAction(null), 2000);
+    try {
+      const quoteId = 'QTE-' + String(Math.floor(1000 + Math.random() * 9000));
+      const res = await fetch('/api/send-quote-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: ui.clientSelector ? `${ui.clientSelector}@client.com` : undefined,
+          customerName: ui.clientSelector || 'Walk-in Client',
+          quoteId,
+          lines: [
+            { description: ui.artDescription || 'Custom framing order', amount: price.subtotal },
+          ],
+          subtotal: price.subtotal,
+          discount: price.discount,
+          tax: price.tax,
+          total: price.total,
+        }),
+      });
+      const data = await res.json();
+      if (data.success || data.previewUrl) setSidebarAction('sent');
+      else setSidebarAction('error');
+    } catch {
+      setSidebarAction('error');
+    }
+    setTimeout(() => setSidebarAction('idle'), 3000);
   }
 
   return (
@@ -719,9 +761,10 @@ export default function ConfiguratorPage() {
             <button
               className="btn btn-primary"
               style={{ width: '100%', padding: '14px 24px' }}
+              disabled={sidebarAction === 'sending'}
               onClick={handleSend}
             >
-              {sidebarAction === 'sending' ? 'Sending…' : 'Send to Client'}
+              {sidebarAction === 'sending' ? 'Sending…' : sidebarAction === 'sent' ? '✓ Quote Sent' : sidebarAction === 'error' ? '✗ Failed — Retry' : 'Send to Client'}
             </button>
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-secondary" style={{ flex: 1, padding: '8px 12px', fontSize: 12 }}>
