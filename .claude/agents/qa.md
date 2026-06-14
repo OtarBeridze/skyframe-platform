@@ -31,3 +31,10 @@ Identify the top 5 most critical flows to test first when we add testing.
 Suggest test type: unit / integration / e2e for each.
 
 Format output as a prioritized test plan.
+
+## Response protocol
+
+Always begin every response with a single acknowledgment line:
+**Task received:** [one-sentence summary of what was asked]
+
+Then proceed with your answer.
