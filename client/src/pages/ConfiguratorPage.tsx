@@ -5,26 +5,78 @@ import { usePricing } from '../context/PricingContext';
 
 const fmt = (n: number) => '$' + n.toFixed(2);
 
+// UI-only fields that have no pricing impact (match prototype 1-for-1 but aren't in PricingInputs)
+interface UIState {
+  clientSelector: string;
+  artDescription: string;
+  artSize: string;
+  lincolnFrame: string;
+  weldedFrame: string;
+  showSignature: string;
+  whiteAllAround: string;
+  framingInstructions: string;
+  braceType: string;
+  hwWire: boolean;
+  hwDrings: boolean;
+  hwSelfHanging: boolean;
+  hwSoftStaples: boolean;
+  hwBlackPaper: boolean;
+  hwBrownPaper: boolean;
+  hwTurnbuttons: boolean;
+  optRagSpacers: boolean;
+  optWoodenSpacers: boolean;
+  optLinenSpacers: boolean;
+  optRefit: boolean;
+  specialtyBoard: string;
+}
+
+const DEFAULT_UI: UIState = {
+  clientSelector: '',
+  artDescription: '',
+  artSize: '',
+  lincolnFrame: '0',
+  weldedFrame: '0',
+  showSignature: '',
+  whiteAllAround: '',
+  framingInstructions: '',
+  braceType: '',
+  hwWire: false,
+  hwDrings: false,
+  hwSelfHanging: false,
+  hwSoftStaples: false,
+  hwBlackPaper: false,
+  hwBrownPaper: false,
+  hwTurnbuttons: false,
+  optRagSpacers: false,
+  optWoodenSpacers: false,
+  optLinenSpacers: false,
+  optRefit: false,
+  specialtyBoard: '',
+};
+
 export default function ConfiguratorPage() {
   const { markupPercent } = usePricing();
   const [inputs, setInputs] = useState<PricingInputs>({ ...DEFAULT_INPUTS, markupPercent });
+  const [ui, setUi] = useState<UIState>(DEFAULT_UI);
+  const [sidebarAction, setSidebarAction] = useState<string | null>(null);
 
   const set = useCallback(<K extends keyof PricingInputs>(key: K, value: PricingInputs[K]) => {
     setInputs(prev => ({ ...prev, [key]: value }));
   }, []);
 
+  const setU = <K extends keyof UIState>(key: K, value: UIState[K]) =>
+    setUi(prev => ({ ...prev, [key]: value }));
+
   // Parse "pricePerIn|mouldingWidth" format from frame-in select
   const handleFrameIn = (raw: string) => {
-    const parts = raw.split('|');
-    const rate  = parseFloat(parts[0]) || 0;
-    const mw    = parseFloat(parts[1]) || 0;
-    setInputs(prev => ({ ...prev, frameInRate: rate, mouldingWidth: mw }));
+    const [r, mw] = raw.split('|');
+    setInputs(prev => ({ ...prev, frameInRate: parseFloat(r) || 0, mouldingWidth: parseFloat(mw) || 0 }));
   };
 
   // Parse "mult|fixed" format from finish select
   const handleFinish = (raw: string) => {
-    const parts = raw.split('|');
-    setInputs(prev => ({ ...prev, finishMult: parseFloat(parts[0]) || 1, finishFixed: parseFloat(parts[1]) || 0 }));
+    const [m, f] = raw.split('|');
+    setInputs(prev => ({ ...prev, finishMult: parseFloat(m) || 1, finishFixed: parseFloat(f) || 0 }));
   };
 
   // Parse "std|ovr" format from floater select
@@ -32,8 +84,8 @@ export default function ConfiguratorPage() {
     if (!raw) {
       setInputs(prev => ({ ...prev, floaterStd: 0, floaterOvr: 0 }));
     } else {
-      const parts = raw.split('|');
-      setInputs(prev => ({ ...prev, floaterStd: parseFloat(parts[0]) || 0, floaterOvr: parseFloat(parts[1]) || 0 }));
+      const [s, o] = raw.split('|');
+      setInputs(prev => ({ ...prev, floaterStd: parseFloat(s) || 0, floaterOvr: parseFloat(o) || 0 }));
     }
   };
 
@@ -41,28 +93,60 @@ export default function ConfiguratorPage() {
   const price = usePrice(priceInputs);
   const markupPct = Math.round(markupPercent * 100);
 
+  function handleSend() {
+    setSidebarAction('sending');
+    setTimeout(() => setSidebarAction(null), 2000);
+  }
+
   return (
     <div className="configurator-layout">
+
       {/* ── Form ── */}
       <div className="configurator-form">
-        <h1>Configurator</h1>
+        <h1>Pricing Configurator</h1>
 
-        {/* 1. Client */}
+        {/* 0. CLIENT */}
         <section className="form-section">
-          <h3>1. Client Information</h3>
+          <h3>Client</h3>
+          <div className="form-group">
+            <label>Select Contact</label>
+            <select value={ui.clientSelector} onChange={e => setU('clientSelector', e.target.value)} style={{ width: '100%' }}>
+              <option value="">Walk-in Client (no contact)</option>
+              <option value="polo">Polo Ralph Lauren</option>
+              <option value="gagosian">Gagosian Gallery</option>
+              <option value="lv">Louis Vuitton</option>
+              <option value="conde">Condé Nast</option>
+            </select>
+          </div>
+        </section>
+
+        {/* 1. ART DESCRIPTION */}
+        <section className="form-section">
+          <h3>1. Art Description</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label>Client Name</label>
-              <input type="text" placeholder="Client name" />
+              <label>Art Description</label>
+              <textarea
+                rows={2}
+                placeholder="Describe the artwork..."
+                value={ui.artDescription}
+                onChange={e => setU('artDescription', e.target.value)}
+                style={{ resize: 'vertical', width: '100%', padding: '9px 12px', border: '1px solid var(--gray-light)', borderRadius: 6, fontFamily: 'Montserrat, sans-serif', fontSize: 13 }}
+              />
             </div>
             <div className="form-group">
-              <label>Order #</label>
-              <input type="text" placeholder="Order number" />
+              <label>Art Size</label>
+              <input
+                type="text"
+                placeholder="e.g., 24 x 36 inches"
+                value={ui.artSize}
+                onChange={e => setU('artSize', e.target.value)}
+              />
             </div>
           </div>
         </section>
 
-        {/* 2. Printing */}
+        {/* 2. PRINTING */}
         <section className="form-section">
           <h3>2. Printing</h3>
           <div className="form-grid">
@@ -113,26 +197,26 @@ export default function ConfiguratorPage() {
           </div>
         </section>
 
-        {/* 3. Frame Dimensions */}
+        {/* 3. FRAME DIMENSIONS */}
         <section className="form-section">
           <h3>3. Frame Dimensions</h3>
           <div style={{ display: 'flex', gap: 40, marginBottom: 24 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input type="radio" name="dim-mode" value="ID" checked={inputs.dimMode === 'ID'} onChange={() => set('dimMode', 'ID')} style={{ width: 'auto', margin: 0 }} />
-              ID (Inside)
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input type="radio" name="dim-mode" value="OD" checked={inputs.dimMode === 'OD'} onChange={() => set('dimMode', 'OD')} style={{ width: 'auto', margin: 0 }} />
-              OD (Outside)
-            </label>
+            <div>
+              <label>ID (Inside)</label>
+              <input type="radio" name="dim-mode" value="ID" checked={inputs.dimMode === 'ID'} onChange={() => set('dimMode', 'ID')} style={{ width: 'auto', margin: '0 0 0 8px' }} />
+            </div>
+            <div>
+              <label>OD (Outside)</label>
+              <input type="radio" name="dim-mode" value="OD" checked={inputs.dimMode === 'OD'} onChange={() => set('dimMode', 'OD')} style={{ width: 'auto', margin: '0 0 0 8px' }} />
+            </div>
           </div>
           <div className="form-grid-3">
             <div className="form-group">
-              <label>Frame Width (in)</label>
+              <label>Frame Width (inches)</label>
               <input type="number" value={inputs.frameW} onChange={e => set('frameW', parseFloat(e.target.value) || 0)} />
             </div>
             <div className="form-group">
-              <label>Frame Height (in)</label>
+              <label>Frame Height (inches)</label>
               <input type="number" value={inputs.frameH} onChange={e => set('frameH', parseFloat(e.target.value) || 0)} />
             </div>
             <div className="form-group">
@@ -148,7 +232,7 @@ export default function ConfiguratorPage() {
           </div>
         </section>
 
-        {/* 4. Mouldings */}
+        {/* 4. MOULDINGS */}
         <section className="form-section">
           <h3>4. Mouldings</h3>
           <div className="form-grid">
@@ -186,7 +270,7 @@ export default function ConfiguratorPage() {
             <div className="form-group">
               <label>Frame Out / Fillet</label>
               <select value={inputs.frameOutRate || ''} onChange={e => set('frameOutRate', parseFloat(e.target.value) || 0)}>
-                <option value="">NO FRAME OUT</option>
+                <option value="">NO FRAME</option>
                 <option value="1.25">D-ASH ($1.25/in)</option>
                 <option value="1.75">JB-13 POPLAR ($1.75/in)</option>
                 <option value="1.55">1.5&quot; POPLAR ($1.55/in)</option>
@@ -211,41 +295,97 @@ export default function ConfiguratorPage() {
               Splined Corners (+$100 per frame)
             </label>
           </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Lincoln Frame</label>
+              <input type="number" value={ui.lincolnFrame} step="0.01" onChange={e => setU('lincolnFrame', e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label>Welded Frame</label>
+              <input type="number" value={ui.weldedFrame} step="0.01" onChange={e => setU('weldedFrame', e.target.value)} />
+            </div>
+          </div>
         </section>
 
-        {/* 6. Specialty Hinging */}
+        {/* 5. FRAMING STYLE */}
+        <section className="form-section">
+          <h3>5. Framing Style</h3>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Show Signature</label>
+              <select value={ui.showSignature} onChange={e => setU('showSignature', e.target.value)}>
+                <option value="">None</option>
+                <option value="TO IMAGE">To Image</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Show White All Around</label>
+              <select value={ui.whiteAllAround} onChange={e => setU('whiteAllAround', e.target.value)}>
+                <option value="">No</option>
+                <option value="YES">Yes</option>
+              </select>
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Framing Instructions</label>
+            <textarea
+              rows={2}
+              placeholder="Special framing instructions..."
+              value={ui.framingInstructions}
+              onChange={e => setU('framingInstructions', e.target.value)}
+              style={{ resize: 'vertical', width: '100%', padding: '9px 12px', border: '1px solid var(--gray-light)', borderRadius: 6, fontFamily: 'Montserrat, sans-serif', fontSize: 13 }}
+            />
+          </div>
+        </section>
+
+        {/* 6. SPECIALTY HINGING */}
         <section className="form-section">
           <h3>6. Specialty Hinging</h3>
-          <div className="form-group">
-            <label>Hinging Type</label>
-            <select value={inputs.hingingType || ''} onChange={e => set('hingingType', parseFloat(e.target.value) || 0)}>
-              <option value="">NO HINGING</option>
-              <option value="35">Japanese (up to 16&quot; × 20&quot;) — $35</option>
-              <option value="35">Japanese (up to 30&quot; × 40&quot;) — $35</option>
-              <option value="35">Japanese (up to 40&quot; × 60&quot;) — $35</option>
-              <option value="35">Japanese (up to 48&quot; × 96&quot;) — $35</option>
-              <option value="100">Silicon — $100</option>
-              <option value="100">Stitches — $100</option>
-            </select>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Hinging Type</label>
+              <select value={inputs.hingingType || ''} onChange={e => set('hingingType', parseFloat(e.target.value) || 0)}>
+                <option value="">NO HINGING</option>
+                <option value="35">Japanese (up to 16&quot; × 20&quot;) — $35</option>
+                <option value="35">Japanese (up to 30&quot; × 40&quot;) — $35</option>
+                <option value="35">Japanese (up to 40&quot; × 60&quot;) — $35</option>
+                <option value="35">Japanese (up to 48&quot; × 96&quot;) — $35</option>
+                <option value="100">Silicon — $100</option>
+                <option value="100">Stitches — $100</option>
+              </select>
+            </div>
           </div>
         </section>
 
-        {/* 7. Mounting */}
+        {/* 7. MOUNTING */}
         <section className="form-section">
           <h3>7. Mounting</h3>
-          <div className="form-group">
-            <label>Mounting Type</label>
-            <select value={inputs.mountingType} onChange={e => set('mountingType', e.target.value)}>
-              <option value="">NO MOUNTING</option>
-              <option value="FOAMCORE">Foamcore (1/4&quot;)</option>
-              <option value="GATORBOARD">Gatorboard (1/4&quot;)</option>
-              <option value="SINTRA">Sintra (1/8&quot;)</option>
-              <option value="DIBOND">Dibond (1/8&quot;)</option>
-            </select>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Mounting Type</label>
+              <select value={inputs.mountingType} onChange={e => set('mountingType', e.target.value)}>
+                <option value="">NO MOUNTING</option>
+                <option value="FOAMCORE">Foamcore (1/4&quot;)</option>
+                <option value="GATORBOARD">Gatorboard (1/4&quot;)</option>
+                <option value="SINTRA">Sintra (1/8&quot;)</option>
+                <option value="DIBOND">Dibond (1/8&quot;)</option>
+                <option value="ACID FREE FC">Acid Free FC</option>
+                <option value="4-PLY">4-Ply</option>
+                <option value="8-PLY">8-Ply</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Brace</label>
+              <select value={ui.braceType} onChange={e => setU('braceType', e.target.value)}>
+                <option value="">NO BRACING</option>
+                <option value="WOOD">Wood Brace</option>
+                <option value="ALUMINUM">Aluminum Brace</option>
+              </select>
+            </div>
           </div>
         </section>
 
-        {/* 8. Glazing */}
+        {/* 8. GLAZING */}
         <section className="form-section">
           <h3>8. Glazing</h3>
           <div className="form-grid">
@@ -269,7 +409,7 @@ export default function ConfiguratorPage() {
           </div>
         </section>
 
-        {/* 9. Miscellaneous */}
+        {/* 9. MISCELLANEOUS PRICING */}
         <section className="form-section">
           <h3>9. Miscellaneous Pricing</h3>
           <div className="form-grid">
@@ -299,24 +439,118 @@ export default function ConfiguratorPage() {
           ))}
         </section>
 
-        {/* 10. Backings & Hardware */}
+        {/* 10. BACKINGS AND HARDWARE */}
         <section className="form-section">
           <h3>10. Backings and Hardware</h3>
-          {([
-            ['hwSecurityHangers', 'Security Hangers ($12 total)'],
-            ['hwEasels',          'Paper Back Easels ($12 total, up to 16×20)'],
-            ['hwChloroplast',     'Chloroplast ($25 total)'],
-          ] as [keyof PricingInputs, string][]).map(([key, label]) => (
-            <div className="form-group" key={key}>
+          <div className="form-group">
+            <label>Select Hardware (check all that apply)</label>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                <input type="checkbox" checked={!!inputs[key]} onChange={e => set(key, e.target.checked as PricingInputs[typeof key])} style={{ width: 'auto', margin: 0 }} />
-                {label}
+                <input type="checkbox" checked={ui.hwWire} onChange={e => setU('hwWire', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Wire
               </label>
             </div>
-          ))}
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.hwDrings} onChange={e => setU('hwDrings', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                D-Rings
+              </label>
+            </div>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.hwSelfHanging} onChange={e => setU('hwSelfHanging', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Self Hanging Strainers ($0.30/in)
+              </label>
+            </div>
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.hwSoftStaples} onChange={e => setU('hwSoftStaples', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Soft Staples
+              </label>
+            </div>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={inputs.hwSecurityHangers} onChange={e => set('hwSecurityHangers', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Security Hangers ($12 total)
+              </label>
+            </div>
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={inputs.hwEasels} onChange={e => set('hwEasels', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Paper Back Easels ($12 total, up to 16×20)
+              </label>
+            </div>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.hwBlackPaper} onChange={e => setU('hwBlackPaper', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Black Paper
+              </label>
+            </div>
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.hwBrownPaper} onChange={e => setU('hwBrownPaper', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Brown Paper
+              </label>
+            </div>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.hwTurnbuttons} onChange={e => setU('hwTurnbuttons', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Turnbuttons
+              </label>
+            </div>
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={inputs.hwChloroplast} onChange={e => set('hwChloroplast', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Chloroplast ($25 total)
+              </label>
+            </div>
+          </div>
         </section>
 
-        {/* 12. Mirror */}
+        {/* 11. OPTIONS */}
+        <section className="form-section">
+          <h3>11. Options</h3>
+          <div className="form-grid">
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.optRagSpacers} onChange={e => setU('optRagSpacers', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Rag Spacers
+              </label>
+            </div>
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.optWoodenSpacers} onChange={e => setU('optWoodenSpacers', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Wooden Spacers
+              </label>
+            </div>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.optLinenSpacers} onChange={e => setU('optLinenSpacers', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Linen Spacers
+              </label>
+            </div>
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={ui.optRefit} onChange={e => setU('optRefit', e.target.checked)} style={{ width: 'auto', margin: 0 }} />
+                Refit Only (no replacement of glazing, spacers, etc.)
+              </label>
+            </div>
+          </div>
+        </section>
+
+        {/* 12. MIRROR */}
         <section className="form-section">
           <h3>12. Mirror</h3>
           <div className="form-grid">
@@ -342,7 +576,21 @@ export default function ConfiguratorPage() {
           </div>
         </section>
 
-        {/* 14. Pack for Shipping */}
+        {/* 13. SPECIALTY BOARDS */}
+        <section className="form-section">
+          <h3>13. Specialty Boards</h3>
+          <div className="form-group">
+            <select value={ui.specialtyBoard} onChange={e => setU('specialtyBoard', e.target.value)} style={{ width: '100%' }}>
+              <option value="">NO SPECIALTY BOARD</option>
+              <option value="CRESCENT RAG">Crescent Rag Board</option>
+              <option value="ARTCARE">Artcare Board</option>
+              <option value="ARCHIVAL">Archival Board</option>
+              <option value="CONSERVATION">Conservation Board</option>
+            </select>
+          </div>
+        </section>
+
+        {/* 14. PACK FOR SHIPPING */}
         <section className="form-section">
           <h3>14. Pack for Shipping</h3>
           <div className="form-grid">
@@ -371,7 +619,7 @@ export default function ConfiguratorPage() {
           </div>
         </section>
 
-        {/* 15. Matting */}
+        {/* 15. MATTING */}
         <section className="form-section">
           <h3>15. Matting</h3>
           <div className="form-grid">
@@ -394,7 +642,7 @@ export default function ConfiguratorPage() {
           </div>
         </section>
 
-        {/* 16. Pricing */}
+        {/* 16. PRICING */}
         <section className="form-section">
           <h3>16. Pricing</h3>
           <div className="form-grid">
@@ -410,7 +658,7 @@ export default function ConfiguratorPage() {
         </section>
       </div>
 
-      {/* ── Live Quote Panel ── */}
+      {/* ── Live Quote Sidebar ── */}
       <aside className="quote-sidebar">
         <div className="price-panel">
           <h3>Live Quote</h3>
@@ -464,6 +712,24 @@ export default function ConfiguratorPage() {
             <div className="price-line total" style={{ marginTop: 8 }}>
               <span>TOTAL</span>
               <span className="price-amount">{fmt(price.total)}</span>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '14px 24px' }}
+              onClick={handleSend}
+            >
+              {sidebarAction === 'sending' ? 'Sending…' : 'Send to Client'}
+            </button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-secondary" style={{ flex: 1, padding: '8px 12px', fontSize: 12 }}>
+                Preview
+              </button>
+              <button className="btn btn-secondary" style={{ flex: 1, padding: '8px 12px', fontSize: 12 }}>
+                Save as Draft
+              </button>
             </div>
           </div>
         </div>
