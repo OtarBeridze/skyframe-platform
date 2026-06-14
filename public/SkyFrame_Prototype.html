@@ -80,6 +80,8 @@ nav .container {
   padding: 32px 0;
   flex-shrink: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 .menu-item {
   padding: 14px 24px;
@@ -104,6 +106,14 @@ nav .container {
   margin-right: 12px;
   vertical-align: middle;
   opacity: 0.7;
+}
+.menu-item-logout {
+  margin-top: auto;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  color: var(--gray-mid);
+}
+.menu-item-logout:hover {
+  color: var(--gold);
 }
 /* Main Content */
 .main-content {
@@ -180,6 +190,9 @@ tr:last-child td { border-bottom: none; }
 .badge-production { background: #DBEAFE; color: #1D4ED8; }
 .badge-completed { background: #D1FAE5; color: #059669; }
 .badge-paid      { background: #CCFBF1; color: #0D9488; }
+.badge-developer { background: #EDE9FE; color: #6D28D9; }
+.badge-admin     { background: #D1FAE5; color: #059669; }
+.badge-sales     { background: #DBEAFE; color: #1D4ED8; }
 /* Buttons */
 .btn {
   padding: 12px 24px;
@@ -478,17 +491,142 @@ select {
 .sync-log-entry:last-child { border-bottom: none; }
 .sync-success { color: #059669; }
 .sync-error { color: #DC2626; }
+
+/* ── Login screen ──────────────────────────────────────────────────────────── */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.login-card {
+  background: var(--warm-white);
+  border-top: 3px solid var(--gold);
+  border-radius: 12px;
+  padding: 48px 44px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+}
+.login-card .login-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.login-card .login-sub {
+  text-align: center;
+  color: var(--gray-mid);
+  font-size: 13px;
+  margin-bottom: 32px;
+}
+.login-card label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gray-dark);
+  margin-bottom: 6px;
+}
+.login-card .form-group { margin-bottom: 20px; }
+.login-card input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--gray-light);
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  background: #fff;
+}
+.login-card input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.login-card .btn-login {
+  width: 100%;
+  padding: 13px;
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.login-card .btn-login:hover { background: #B39659; }
+.login-error {
+  display: none;
+  background: #FEE2E2;
+  color: #991B1B;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.login-hint {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--gray-light);
+  font-size: 12px;
+  color: var(--gray-mid);
+  line-height: 1.8;
+}
+.login-hint strong { color: var(--gray-dark); }
+.btn-logout {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--warm-white);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-logout:hover { border-color: var(--gold); color: var(--gold); }
 </style>
 </head>
 <body>
+
+<!-- Login Screen -->
+<div id="login-screen" class="login-screen">
+  <form class="login-card" onsubmit="handleLogin(event)">
+    <div class="login-logo">SKYFRAME</div>
+    <div class="login-sub">Order Management &amp; Quoting</div>
+    <div id="login-error" class="login-error">Invalid login or password.</div>
+    <div class="form-group">
+      <label for="login-username">Login</label>
+      <input type="text" id="login-username" autocomplete="off" autofocus>
+    </div>
+    <div class="form-group">
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" autocomplete="off">
+    </div>
+    <button type="submit" class="btn-login">Sign In</button>
+    <div class="login-hint">
+      <strong>Demo accounts</strong><br>
+      Developer / Developer &nbsp;·&nbsp; Admin / Admin &nbsp;·&nbsp; Sales / Sales
+    </div>
+  </form>
+</div>
 
 <!-- Navigation -->
 <nav>
   <div class="container">
     <div class="logo">SKYFRAME</div>
     <div class="user-info">
-      <span>Admin User</span>
-      <div class="user-avatar">A</div>
+      <span id="current-user-name">Admin</span>
+      <div class="user-avatar" id="role-avatar">A</div>
     </div>
   </div>
 </nav>
@@ -497,41 +635,45 @@ select {
 <div class="layout">
   <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="menu-item active" onclick="showView('dashboard')">
+    <div class="menu-item active" data-page="dashboard" onclick="showView('dashboard')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
       Dashboard
     </div>
-    <div class="menu-item" onclick="showView('configurator')">
+    <div class="menu-item" data-page="configurator" onclick="showView('configurator')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>
       Configurator
     </div>
-    <div class="menu-item" onclick="showView('quotes')">
+    <div class="menu-item" data-page="quotes" onclick="showView('quotes')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
       Quotes
     </div>
-    <div class="menu-item" onclick="showView('orders')">
+    <div class="menu-item" data-page="orders" onclick="showView('orders')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg>
       Orders
     </div>
-    <div class="menu-item" onclick="showView('clients')">
+    <div class="menu-item" data-page="clients" onclick="showView('clients')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path></svg>
       Clients
     </div>
-    <div class="menu-item" onclick="showView('pricing-admin')">
+    <div class="menu-item" data-page="pricing-admin" onclick="showView('pricing-admin')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L11 4.323V3a1 1 0 011-1zm-5 8.274l-.818 2.552c-.25.78-.75 1.395-1.372 1.696A4 4 0 005 11.274zM5 11.274V5a1 1 0 112 0v6.274a1 1 0 01-2 0zm12 0V5a1 1 0 10-2 0v6.274a1 1 0 102 0z"></path></svg>
       Pricing Admin
     </div>
-    <div class="menu-item" onclick="showView('integrations')">
+    <div class="menu-item" data-page="integrations" onclick="showView('integrations')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
       Integrations
     </div>
-    <div class="menu-item" onclick="showView('users')">
+    <div class="menu-item" data-page="users" onclick="showView('users')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg>
       Users & Roles
     </div>
-    <div class="menu-item" onclick="showView('qa-automation')">
+    <div class="menu-item" data-page="qa-automation" onclick="showView('qa-automation')">
       <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C.817 14.769 2.156 18 4.828 18h10.344c2.672 0 4.011-3.231 2.122-5.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.027 1.028a4 4 0 00-2.171.102l-.47.156a4 4 0 01-2.53 0l-.563-.187a1.993 1.993 0 00-.114-.035l1.063-1.063A3 3 0 009 8.172z" clip-rule="evenodd"></path></svg>
       QA Automation
+    </div>
+    <div class="menu-item menu-item-logout" onclick="logout()">
+      <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h6a1 1 0 100-2H4V5h5a1 1 0 000-2H3zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path></svg>
+      Log out
     </div>
   </aside>
 
@@ -2516,7 +2658,15 @@ select {
           <tr>
             <td>Admin User</td>
             <td>admin@skyframe.com</td>
-            <td><span class="badge badge-approved">Admin</span></td>
+            <td><span class="badge badge-admin">Admin</span></td>
+            <td><span class="badge badge-approved">Active</span></td>
+            <td>Just now</td>
+            <td><button class="btn btn-outline" style="padding: 6px 12px; font-size: 11px;">Edit</button></td>
+          </tr>
+          <tr>
+            <td>Otar Beridze</td>
+            <td>otar.beridze@itechcraft.com</td>
+            <td><span class="badge badge-developer">Developer</span></td>
             <td><span class="badge badge-approved">Active</span></td>
             <td>Just now</td>
             <td><button class="btn btn-outline" style="padding: 6px 12px; font-size: 11px;">Edit</button></td>
@@ -2524,7 +2674,7 @@ select {
           <tr>
             <td>Sarah Mitchell</td>
             <td>sarah@skyframe.com</td>
-            <td><span class="badge badge-production">Sales Rep</span></td>
+            <td><span class="badge badge-sales">Sales Rep</span></td>
             <td><span class="badge badge-approved">Active</span></td>
             <td>2 hours ago</td>
             <td><button class="btn btn-outline" style="padding: 6px 12px; font-size: 11px;">Edit</button></td>
@@ -2532,13 +2682,32 @@ select {
           <tr>
             <td>Marcus Chen</td>
             <td>marcus@skyframe.com</td>
-            <td><span class="badge badge-production">Sales Rep</span></td>
+            <td><span class="badge badge-sales">Sales Rep</span></td>
             <td><span class="badge badge-approved">Active</span></td>
             <td>5 hours ago</td>
             <td><button class="btn btn-outline" style="padding: 6px 12px; font-size: 11px;">Edit</button></td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Permissions Matrix — Developer-only -->
+      <div id="permissions-matrix-section" style="margin-top:48px;">
+        <h3 style="margin-bottom:6px;">Permissions Matrix</h3>
+        <p style="color:var(--gray-mid); font-size:13px; margin-bottom:20px;">Which pages each role can access. Switch roles from the header to preview live.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Page</th>
+              <th style="text-align:center;"><span class="badge badge-sales">Sales Rep</span></th>
+              <th style="text-align:center;"><span class="badge badge-admin">Admin</span></th>
+              <th style="text-align:center;"><span class="badge badge-developer">Developer</span></th>
+            </tr>
+          </thead>
+          <tbody id="permissions-matrix-body">
+            <!-- Rows generated by renderPermissionsMatrix() -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- QA AUTOMATION VIEW -->
@@ -2548,22 +2717,22 @@ select {
         <p style="color:var(--gray-mid);">Playwright end-to-end test suite — run locally or in CI</p>
         <div style="display:flex; gap:12px; align-items:center;">
           <span class="badge badge-approved" style="font-size:13px; padding:6px 14px;">Playwright v1.60</span>
-          <span class="badge badge-production" style="font-size:13px; padding:6px 14px;">84 Tests · 7 Suites</span>
+          <span class="badge badge-production" style="font-size:13px; padding:6px 14px;">104 Tests · 8 Suites</span>
         </div>
       </div>
 
       <!-- Stats row -->
       <div class="dashboard-grid" style="margin-bottom:40px;">
         <div class="stat-card">
-          <div class="stat-value">84</div>
+          <div class="stat-value">104</div>
           <div class="stat-label">Total Tests</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">7</div>
+          <div class="stat-value">8</div>
           <div class="stat-label">Test Suites</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">2</div>
+          <div class="stat-value">3</div>
           <div class="stat-label">Pages Covered</div>
         </div>
         <div class="stat-card">
@@ -2595,7 +2764,7 @@ select {
         <button id="qa-tab-btn-e2e" onclick="switchQaTab('e2e')"
           style="padding:12px 24px; background:none; border:none; border-bottom:3px solid var(--olive-gold); margin-bottom:-2px; cursor:pointer; font-family:inherit; font-size:14px; font-weight:600; color:var(--olive-gold); display:flex; align-items:center; gap:8px;">
           End-to-End Tests
-          <span style="background:var(--olive-gold); color:white; font-size:11px; padding:2px 8px; border-radius:20px;">84</span>
+          <span style="background:var(--olive-gold); color:white; font-size:11px; padding:2px 8px; border-radius:20px;">104</span>
         </button>
         <button id="qa-tab-btn-unit" onclick="switchQaTab('unit')"
           style="padding:12px 24px; background:none; border:none; border-bottom:3px solid transparent; margin-bottom:-2px; cursor:pointer; font-family:inherit; font-size:14px; color:var(--gray-mid); display:flex; align-items:center; gap:8px;">
@@ -2786,6 +2955,79 @@ select {
                 <td style="padding:10px 16px; font-weight:500;">Live Quote Panel</td>
                 <td style="padding:10px 16px; text-align:center; font-size:16px; color:#10b981;">✓</td>
                 <td style="padding:10px 16px; color:var(--gray-mid);">Visible on Configurator only; hidden on Dashboard / Orders / Clients; viewport-bounded on scroll; hides when switching away</td>
+                <td style="padding:10px 16px; text-align:center;"><span style="background:#d1fae5; color:#065f46; font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600;">PASSED</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Page: Login & Access Control -->
+        <div style="margin-bottom:48px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+              <h3 style="margin:0 0 4px 0;">Login &amp; Access Control</h3>
+              <span style="color:var(--gray-mid); font-size:13px;">20 tests · tests/auth/login.spec.js</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:16px;">
+              <div style="text-align:right;">
+                <div style="font-size:12px; color:var(--gray-mid); margin-bottom:5px;">7 / 7 scenarios covered</div>
+                <div style="width:180px; height:8px; background:var(--gray-light); border-radius:4px; overflow:hidden;">
+                  <div style="width:100%; height:100%; background:#10b981; border-radius:4px;"></div>
+                </div>
+              </div>
+              <span style="background:#10b981; color:white; font-size:14px; font-weight:700; padding:6px 14px; border-radius:20px;">100%</span>
+            </div>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:13px; background:var(--warm-white); border:1px solid var(--gray-light); border-radius:8px; overflow:hidden;">
+            <thead>
+              <tr style="background:var(--gray-light);">
+                <th style="padding:11px 16px; text-align:left; font-weight:600; width:22%;">Scenario</th>
+                <th style="padding:11px 16px; text-align:center; font-weight:600; width:80px;">Covered</th>
+                <th style="padding:11px 16px; text-align:left; font-weight:600;">What's tested</th>
+                <th style="padding:11px 16px; text-align:center; font-weight:600; width:90px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--gray-light);">
+                <td style="padding:10px 16px; font-weight:500;">Login Screen</td>
+                <td style="padding:10px 16px; text-align:center; font-size:16px; color:#10b981;">✓</td>
+                <td style="padding:10px 16px; color:var(--gray-mid);">Gate shown when not authenticated, wrong credentials show error, unknown user rejected, empty submit blocked, login is case-insensitive</td>
+                <td style="padding:10px 16px; text-align:center;"><span style="background:#d1fae5; color:#065f46; font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600;">PASSED</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--gray-light);">
+                <td style="padding:10px 16px; font-weight:500;">Valid Logins</td>
+                <td style="padding:10px 16px; text-align:center; font-size:16px; color:#10b981;">✓</td>
+                <td style="padding:10px 16px; color:var(--gray-mid);">Developer / Admin / Sales each set correct role, name, avatar initial, and visible menu count (9 / 8 / 5)</td>
+                <td style="padding:10px 16px; text-align:center;"><span style="background:#d1fae5; color:#065f46; font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600;">PASSED</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--gray-light);">
+                <td style="padding:10px 16px; font-weight:500;">Sidebar by Role</td>
+                <td style="padding:10px 16px; text-align:center; font-size:16px; color:#10b981;">✓</td>
+                <td style="padding:10px 16px; color:var(--gray-mid);">Sales Rep sees exactly 5 pages; Admin sees 8 (no QA Automation); Developer sees all 9 including QA Automation</td>
+                <td style="padding:10px 16px; text-align:center;"><span style="background:#d1fae5; color:#065f46; font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600;">PASSED</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--gray-light);">
+                <td style="padding:10px 16px; font-weight:500;">Navigation Guard</td>
+                <td style="padding:10px 16px; text-align:center; font-size:16px; color:#10b981;">✓</td>
+                <td style="padding:10px 16px; color:var(--gray-mid);">Sales Rep redirected from Users &amp; Roles → Dashboard; Admin redirected from QA Automation → Dashboard; Developer can open QA Automation</td>
+                <td style="padding:10px 16px; text-align:center;"><span style="background:#d1fae5; color:#065f46; font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600;">PASSED</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--gray-light);">
+                <td style="padding:10px 16px; font-weight:500;">Permissions Matrix</td>
+                <td style="padding:10px 16px; text-align:center; font-size:16px; color:#10b981;">✓</td>
+                <td style="padding:10px 16px; color:var(--gray-mid);">Developer sees the full 9-row Permissions Matrix on Users &amp; Roles; Admin sees the user table but matrix is hidden</td>
+                <td style="padding:10px 16px; text-align:center;"><span style="background:#d1fae5; color:#065f46; font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600;">PASSED</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--gray-light);">
+                <td style="padding:10px 16px; font-weight:500;">Logout</td>
+                <td style="padding:10px 16px; text-align:center; font-size:16px; color:#10b981;">✓</td>
+                <td style="padding:10px 16px; color:var(--gray-mid);">Log out lives in sidebar (not header); clicking it returns to login screen; session is cleared on reload after logout</td>
+                <td style="padding:10px 16px; text-align:center;"><span style="background:#d1fae5; color:#065f46; font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600;">PASSED</span></td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px; font-weight:500;">Session Persistence</td>
+                <td style="padding:10px 16px; text-align:center; font-size:16px; color:#10b981;">✓</td>
+                <td style="padding:10px 16px; color:var(--gray-mid);">A logged-in session survives a full page reload — login screen stays hidden, role-filtered menu stays intact</td>
                 <td style="padding:10px 16px; text-align:center;"><span style="background:#d1fae5; color:#065f46; font-size:11px; padding:2px 9px; border-radius:20px; font-weight:600;">PASSED</span></td>
               </tr>
             </tbody>
@@ -3013,6 +3255,7 @@ select {
         <label>Role</label>
         <select required>
           <option value="">Select role...</option>
+          <option value="developer">Developer</option>
           <option value="admin">Admin</option>
           <option value="sales">Sales Rep</option>
         </select>
@@ -3026,12 +3269,121 @@ select {
 </div>
 
 <script>
+// ── Role-Based Access Control ────────────────────────────────────────────────
+// Menu pages that are gated by role. Detail/sub-views (order-detail, client-detail,
+// quote-pdf, configurator-preview) are reached only from these pages and therefore
+// inherit their parent's access — they are intentionally NOT gated here.
+const MENU_PAGES = ['dashboard','configurator','quotes','orders','clients','pricing-admin','integrations','users','qa-automation'];
+
+// Single source of truth: which menu pages each role may see.
+const ROLE_PAGES = {
+  developer: ['dashboard','configurator','quotes','orders','clients','pricing-admin','integrations','users','qa-automation'], // all pages
+  admin:     ['dashboard','configurator','quotes','orders','clients','pricing-admin','integrations','users'],                  // all except QA Automation
+  sales:     ['dashboard','configurator','quotes','orders','clients'],                                                         // sales-facing pages only
+};
+
+const ROLE_LABELS = { developer: 'Developer', admin: 'Admin', sales: 'Sales Rep' };
+
+// Display names for the Permissions Matrix on the Users & Roles page.
+const PAGE_LABELS = {
+  'dashboard': 'Dashboard', 'configurator': 'Configurator', 'quotes': 'Quotes',
+  'orders': 'Orders', 'clients': 'Clients', 'pricing-admin': 'Pricing Admin',
+  'integrations': 'Integrations', 'users': 'Users & Roles', 'qa-automation': 'QA Automation',
+};
+
+let CURRENT_ROLE = localStorage.getItem('skyframe-role') || 'admin';
+
+// ── Authentication ───────────────────────────────────────────────────────────
+// Demo accounts (POC — no real auth backend). Login is matched case-insensitively;
+// password is not strictly validated beyond matching the account.
+const USERS = {
+  developer: { password: 'developer', role: 'developer', name: 'Developer' },
+  admin:     { password: 'admin',     role: 'admin',     name: 'Admin' },
+  sales:     { password: 'sales',     role: 'sales',     name: 'Sales Rep' },
+};
+
+function handleLogin(event) {
+  event.preventDefault();
+  const login = (document.getElementById('login-username').value || '').trim().toLowerCase();
+  const pass  = (document.getElementById('login-password').value || '').trim().toLowerCase();
+  const user  = USERS[login];
+  const errEl = document.getElementById('login-error');
+  if (!user || user.password !== pass) {
+    if (errEl) errEl.style.display = 'block';
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+  localStorage.setItem('skyframe-auth', login);
+  localStorage.setItem('skyframe-role', user.role);
+  CURRENT_ROLE = user.role;
+  document.getElementById('login-screen').style.display = 'none';
+  applyRolePermissions();
+  showView('dashboard');
+}
+
+function logout() {
+  localStorage.removeItem('skyframe-auth');
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// Build the Permissions Matrix table (page × role) from ROLE_PAGES.
+function renderPermissionsMatrix() {
+  const body = document.getElementById('permissions-matrix-body');
+  if (!body) return;
+  const cell = ok => ok
+    ? '<td style="text-align:center; color:#059669; font-weight:600;">✓</td>'
+    : '<td style="text-align:center; color:var(--gray-light);">—</td>';
+  body.innerHTML = MENU_PAGES.map(page =>
+    '<tr><td style="font-weight:500;">' + PAGE_LABELS[page] + '</td>'
+    + cell(ROLE_PAGES.sales.includes(page))
+    + cell(ROLE_PAGES.admin.includes(page))
+    + cell(ROLE_PAGES.developer.includes(page))
+    + '</tr>'
+  ).join('');
+}
+
+// Apply the active role to the sidebar: hide disallowed items, sync the header,
+// and redirect to Dashboard if the visible page is no longer permitted.
+function applyRolePermissions() {
+  const allowed = ROLE_PAGES[CURRENT_ROLE] || ROLE_PAGES.admin;
+  document.querySelectorAll('.menu-item[data-page]').forEach(item => {
+    const page = item.getAttribute('data-page');
+    item.style.display = allowed.includes(page) ? '' : 'none';
+  });
+  const avatar = document.getElementById('role-avatar');
+  if (avatar) avatar.textContent = ROLE_LABELS[CURRENT_ROLE].charAt(0);
+  const nameEl = document.getElementById('current-user-name');
+  if (nameEl) nameEl.textContent = ROLE_LABELS[CURRENT_ROLE];
+  // Permissions Matrix is a system/meta view — visible to Developer only
+  const matrix = document.getElementById('permissions-matrix-section');
+  if (matrix) matrix.style.display = CURRENT_ROLE === 'developer' ? '' : 'none';
+  const current = document.querySelector('.view.active');
+  if (current && MENU_PAGES.includes(current.id) && !allowed.includes(current.id)) {
+    showView('dashboard');
+  }
+}
+
+// Switch the active role (POC demo affordance — the prototype has no real auth/login).
+function setRole(role) {
+  if (!ROLE_PAGES[role]) return;
+  CURRENT_ROLE = role;
+  localStorage.setItem('skyframe-role', role);
+  applyRolePermissions();
+}
+
 // View Navigation
 function showView(viewId) {
+  // Role guard — block navigation to a gated page the active role cannot access
+  if (MENU_PAGES.includes(viewId) && !(ROLE_PAGES[CURRENT_ROLE] || []).includes(viewId)) {
+    viewId = 'dashboard';
+  }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
   document.getElementById(viewId).classList.add('active');
-  const menuEl = event.target.closest('.menu-item');
+  // Highlight the matching sidebar item — works for both click and programmatic navigation
+  const menuEl = document.querySelector('.menu-item[data-page="' + viewId + '"]');
   if (menuEl) menuEl.classList.add('active');
   const qs = document.getElementById('quote-sidebar');
   if (qs) qs.classList.toggle('visible', viewId === 'configurator');
@@ -3446,6 +3798,16 @@ function cancelClientEdit() {
 
 // Initialize price on load
 window.onload = function() {
+  // Auth gate — show the app only for a recognised session, otherwise the login screen
+  const authedLogin = localStorage.getItem('skyframe-auth');
+  if (authedLogin && USERS[authedLogin]) {
+    CURRENT_ROLE = USERS[authedLogin].role;
+    document.getElementById('login-screen').style.display = 'none';
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+  applyRolePermissions();
+  renderPermissionsMatrix();
   updatePrice();
   populateContactDropdown();
   checkQBOStatus();
