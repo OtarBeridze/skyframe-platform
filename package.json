@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "dev:client": "cd client && npm run dev",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report"
