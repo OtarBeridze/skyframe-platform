@@ -309,3 +309,125 @@ tr:last-child td { border-bottom: none; }
 }
 .page-stub h2 { color: var(--black); margin: 0; }
 .page-stub p { font-size: 13px; }
+
+/* Configurator */
+.configurator-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 32px;
+  align-items: start;
+  height: 100%;
+}
+.configurator-form {
+  overflow-y: auto;
+  padding-right: 8px;
+}
+.configurator-form h1 {
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+.form-section {
+  background: white;
+  border: 1px solid var(--gray-light);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.form-section h3 {
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-dark);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--gray-light);
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.form-grid:last-child { margin-bottom: 0; }
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.form-grid-3:last-child { margin-bottom: 0; }
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-group label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-dark);
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--gray-light);
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  background: white;
+  color: var(--black);
+  width: 100%;
+}
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+/* Quote sidebar */
+.quote-sidebar {
+  position: sticky;
+  top: 24px;
+}
+.price-panel {
+  background: var(--black);
+  color: var(--warm-white);
+  border-radius: 10px;
+  padding: 24px;
+}
+.price-panel h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--gold);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.price-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.price-line:last-child { border-bottom: none; }
+.price-line.total {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--gold);
+  border-top: 1px solid rgba(255,255,255,0.15);
+  border-bottom: none;
+  padding-top: 10px;
+  margin-top: 4px;
+}
+.price-amount {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
