@@ -1,11 +1,13 @@
 import { useState, useCallback } from 'react';
 import { usePrice } from '../hooks/usePrice';
 import { DEFAULT_INPUTS, type PricingInputs } from '../lib/pricing';
+import { usePricing } from '../context/PricingContext';
 
 const fmt = (n: number) => '$' + n.toFixed(2);
 
 export default function ConfiguratorPage() {
-  const [inputs, setInputs] = useState<PricingInputs>(DEFAULT_INPUTS);
+  const { markupPercent } = usePricing();
+  const [inputs, setInputs] = useState<PricingInputs>({ ...DEFAULT_INPUTS, markupPercent });
 
   const set = useCallback(<K extends keyof PricingInputs>(key: K, value: PricingInputs[K]) => {
     setInputs(prev => ({ ...prev, [key]: value }));
@@ -35,8 +37,9 @@ export default function ConfiguratorPage() {
     }
   };
 
-  const price = usePrice(inputs);
-  const markupPct = Math.round(inputs.markupPercent * 100);
+  const priceInputs = { ...inputs, markupPercent };
+  const price = usePrice(priceInputs);
+  const markupPct = Math.round(markupPercent * 100);
 
   return (
     <div className="configurator-layout">
