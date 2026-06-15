@@ -1,11 +1,10 @@
-import { type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { PageId } from '../types';
 
 interface Props {
   page: PageId;
-  children: ReactNode;
+  children: JSX.Element;
 }
 
 export default function PrivateRoute({ page, children }: Props) {

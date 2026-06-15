@@ -38,6 +38,7 @@ export default function QaAutomationPage() {
   }, []);
 
   const latest = runs[0];
+  const totalPassed  = runs.reduce((s, r) => s + r.passed, 0);
   const totalFailed  = runs.reduce((s, r) => s + r.failed, 0);
   const passRate     = runs.length ? Math.round((runs.filter(r => r.status === 'passed').length / runs.length) * 100) : 0;
 
