@@ -9,6 +9,12 @@ const nodemailer = require('nodemailer');
 const app = express();
 app.use(express.json());
 
+// Serve SkyFrame_Prototype.html as root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'SkyFrame_Prototype.html'));
+});
+app.use(express.static(path.join(__dirname, 'public')));
+
 // ── QuickBooks config ──────────────────────────────────────────────────────────
 const CLIENT_ID     = 'AB5rzyr0kAxWrTNQHzlNiriDy7IR9g6kvAsQAvgEkf98PAveO2';
 const CLIENT_SECRET = 'hclfqM8JaK7Ab62eLKMqZlAzS0j3sMP5sgaEav2B';
@@ -786,22 +792,6 @@ app.post('/api/test-runs', (req, res) => {
   console.log(`[TestRuns] Run #${id} recorded: ${passed}/${tests} passed (${run.status})`);
   res.json({ success: true, run });
 });
-
-// ── React SPA ──────────────────────────────────────────────────────────────────
-// Phase 5 cutover: React app is now the primary UI. dist/ is built by running
-// `cd client && npm run build` — the output lands at repo-root dist/.
-// The wildcard catch-all hands all non-API routes to React Router.
-const DIST = path.join(__dirname, 'dist');
-if (fs.existsSync(DIST)) {
-  app.use(express.static(DIST));
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(DIST, 'index.html'));
-  });
-} else {
-  app.get('*', (_req, res) => {
-    res.status(503).send('<pre>React build missing.\nRun: cd client &amp;&amp; npm run build</pre>');
-  });
-}
 
 // ── Start ──────────────────────────────────────────────────────────────────────
 

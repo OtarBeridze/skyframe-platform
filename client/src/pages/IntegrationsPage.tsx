@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-interface IntegStatus { connected: boolean; detail?: string }
+interface IntegStatus { connected: boolean; label: string; detail?: string }
 
 function Panel({ title, logo, status, children }: { title: string; logo: string; status: IntegStatus; children?: React.ReactNode }) {
   return (
@@ -23,18 +23,15 @@ function Panel({ title, logo, status, children }: { title: string; logo: string;
 }
 
 export default function IntegrationsPage() {
-  const [loading, setLoading] = useState(true);
   const [qbStatus, setQbStatus] = useState<boolean | null>(null);
   const [mondayTracked, setMondayTracked] = useState<number | null>(null);
   const [trackpodTracked, setTrackpodTracked] = useState<number | null>(null);
   const [testResult, setTestResult] = useState<string | null>(null);
 
   useEffect(() => {
-    void Promise.allSettled([
-      fetch('/api/qbo-status').then(r => r.json()).then((d: { connected?: boolean }) => setQbStatus(!!d.connected)).catch(() => setQbStatus(false)),
-      fetch('/api/monday-status').then(r => r.json()).then((d: { tracked?: Record<string, unknown> }) => setMondayTracked(Object.keys(d.tracked ?? {}).length)).catch(() => setMondayTracked(0)),
-      fetch('/api/trackpod-status').then(r => r.json()).then((d: { tracked?: Record<string, unknown> }) => setTrackpodTracked(Object.keys(d.tracked ?? {}).length)).catch(() => setTrackpodTracked(0)),
-    ]).finally(() => setLoading(false));
+    fetch('/api/qbo-status').then(r => r.json()).then(d => setQbStatus(!!d.connected)).catch(() => setQbStatus(false));
+    fetch('/api/monday-status').then(r => r.json()).then(d => setMondayTracked(Object.keys(d.tracked ?? {}).length)).catch(() => setMondayTracked(0));
+    fetch('/api/trackpod-status').then(r => r.json()).then(d => setTrackpodTracked(Object.keys(d.tracked ?? {}).length)).catch(() => setTrackpodTracked(0));
   }, []);
 
   async function testQB() {
@@ -58,11 +55,11 @@ export default function IntegrationsPage() {
       <Panel
         title="QuickBooks Online"
         logo="📊"
-        status={{ connected: !loading && (qbStatus ?? false), detail: loading ? 'Checking…' : qbStatus ? 'OAuth 2.0 — tokens refreshed automatically' : 'OAuth 2.0 — click Connect to authorize' }}
+        status={{ connected: qbStatus ?? false, detail: qbStatus ? 'OAuth 2.0 — tokens refreshed automatically' : 'OAuth 2.0 — click Connect to authorize' }}
       >
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-          <a href="/auth/quickbooks" className={`btn btn-primary btn-sm${loading ? ' btn-disabled' : ''}`} aria-disabled={loading}>
-            {loading ? 'Checking…' : qbStatus ? 'Reconnect QB' : 'Connect QuickBooks'}
+          <a href="/auth/quickbooks" className="btn btn-primary btn-sm">
+            {qbStatus ? 'Reconnect QB' : 'Connect QuickBooks'}
           </a>
           <button className="btn btn-outline btn-sm" onClick={testQB}>Test Connection</button>
           {testResult && <span style={{ fontSize: 13, color: testResult.startsWith('✓') ? '#059669' : '#DC2626' }}>{testResult}</span>}

@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Layout from './components/Layout/Layout';
 import PrivateRoute from './components/PrivateRoute';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ConfiguratorPage from './pages/ConfiguratorPage';
@@ -28,31 +27,31 @@ export default function App() {
       {/* Protected — all wrapped in the shared Layout */}
       <Route element={<Layout />}>
         <Route path="/dashboard" element={
-          <PrivateRoute page="dashboard"><ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="dashboard"><DashboardPage /></PrivateRoute>
         } />
         <Route path="/configurator" element={
-          <PrivateRoute page="configurator"><ErrorBoundary label="configurator"><ConfiguratorPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="configurator"><ConfiguratorPage /></PrivateRoute>
         } />
         <Route path="/quotes" element={
-          <PrivateRoute page="quotes"><ErrorBoundary label="quotes"><QuotesPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="quotes"><QuotesPage /></PrivateRoute>
         } />
         <Route path="/orders" element={
-          <PrivateRoute page="orders"><ErrorBoundary label="orders"><OrdersPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="orders"><OrdersPage /></PrivateRoute>
         } />
         <Route path="/clients" element={
-          <PrivateRoute page="clients"><ErrorBoundary label="clients"><ClientsPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="clients"><ClientsPage /></PrivateRoute>
         } />
         <Route path="/pricing-admin" element={
-          <PrivateRoute page="pricing-admin"><ErrorBoundary label="pricing-admin"><PricingAdminPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="pricing-admin"><PricingAdminPage /></PrivateRoute>
         } />
         <Route path="/integrations" element={
-          <PrivateRoute page="integrations"><ErrorBoundary label="integrations"><IntegrationsPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="integrations"><IntegrationsPage /></PrivateRoute>
         } />
         <Route path="/users" element={
-          <PrivateRoute page="users"><ErrorBoundary label="users"><UsersPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="users"><UsersPage /></PrivateRoute>
         } />
         <Route path="/qa-automation" element={
-          <PrivateRoute page="qa-automation"><ErrorBoundary label="qa-automation"><QaAutomationPage /></ErrorBoundary></PrivateRoute>
+          <PrivateRoute page="qa-automation"><QaAutomationPage /></PrivateRoute>
         } />
       </Route>
 
