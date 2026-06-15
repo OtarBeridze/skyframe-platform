@@ -11,7 +11,7 @@ with locations in NYC, NJ, and Miami. Replaces manual Excel workflows.
 
 ## Architecture
 
-- **Frontend:** Single-page HTML prototype (`public/SkyFrame_Prototype.html`) → Production: React + TypeScript
+- **Frontend:** React + TypeScript SPA (`client/`) — served from `dist/` built by Vite. Prototype archived at `prototype/SkyFrame_Prototype.html`.
 - **Backend:** Node.js + Express (`server.js`) → Production: Node.js + Fastify
 - **Database:** In-memory (POC) → Production: PostgreSQL
 - **Infrastructure:** AWS (ECS / Lambda)
@@ -30,7 +30,8 @@ with locations in NYC, NJ, and Miami. Replaces manual Excel workflows.
 ## API Routes
 
 ```
-GET  /                        → Serve prototype HTML
+GET  /                        → Serve React SPA (dist/index.html)
+GET  /*                       → SPA catch-all for React Router client-side routes
 GET  /auth/quickbooks         → Start QB OAuth flow
 GET  /callback                → QB OAuth callback
 GET  /api/qbo-status          → QuickBooks connection status
@@ -48,11 +49,17 @@ GET  /api/trackpod-status     → TrackPod tracked statuses
 ## Commands
 
 ```bash
-# Run server
+# Build React app (required before starting server for production)
+cd client && npm run build
+
+# Run server (serves React SPA + all API routes on :3000)
 node server.js
 
 # Run with auto-restart (Node 18+)
 node --watch server.js
+
+# Run React dev server (HMR on :5173, proxies /api → :3000)
+cd client && npm run dev
 
 # Test TrackPod API
 node integrations/trackpod/trackpod-api-test.js
@@ -88,11 +95,23 @@ npm install
 ```
 skyframe-platform/
 ├── CLAUDE.md                          ← You are here
-├── server.js                          ← Main Express server (768 lines)
+├── server.js                          ← Express server: API routes + serves dist/
 ├── package.json
 ├── .env.example                       ← Copy to .env and fill credentials
-├── public/
-│   └── SkyFrame_Prototype.html        ← Full UI prototype (3858 lines)
+├── client/                            ← React + TypeScript SPA (Vite)
+│   ├── src/
+│   │   ├── pages/                     ← One file per page
+│   │   ├── components/                ← Layout, ErrorBoundary, PrivateRoute
+│   │   ├── context/                   ← AuthContext, PricingContext
+│   │   ├── hooks/                     ← usePrice
+│   │   ├── lib/                       ← pricing.ts (pure fn), pricingTables.ts
+│   │   ├── constants/rbac.ts          ← ROLE_PAGES, USERS, PAGE_ROUTES
+│   │   └── types/index.ts             ← Role, PageId, User
+│   ├── tsconfig.app.json              ← strict: true
+│   └── vite.config.ts                 ← outDir: ../dist, proxy /api → :3000
+├── dist/                              ← Built React app (git-ignored, run npm run build)
+├── prototype/
+│   └── SkyFrame_Prototype.html        ← Archived UI prototype (reference only)
 ├── integrations/
 │   ├── quickbooks/
 │   │   ├── quickbooks_integration.js  ← Standalone QB POC
