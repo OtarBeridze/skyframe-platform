@@ -793,6 +793,17 @@ app.post('/api/test-runs', (req, res) => {
   res.json({ success: true, run });
 });
 
+// ── React SPA (production build) ───────────────────────────────────────────────
+// When `npm run build` has been run from client/, dist/ is present and served here.
+// The wildcard catch-all enables React Router's client-side routing on direct loads.
+const DIST = path.join(__dirname, 'dist');
+if (fs.existsSync(DIST)) {
+  app.use(express.static(DIST));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(DIST, 'index.html'));
+  });
+}
+
 // ── Start ──────────────────────────────────────────────────────────────────────
 
 app.listen(3000, () => {
